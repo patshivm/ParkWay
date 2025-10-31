@@ -1,18 +1,14 @@
 :root {
   --bg:#f4f7fb;
-  --header-bg:#6366f1;
-  --header-color:white;
   --green:#2ecc71;
   --red:#e74c3c;
   --yellow:#f1c40f;
-  --shadow:0 6px 18px rgba(20,20,40,0.06);
   --tooltip-bg:rgba(0,0,0,0.75);
   --tooltip-color:white;
 }
 
 body { margin:0; font-family:Arial, sans-serif; background:var(--bg); }
-#totals { margin:10px; font-weight:bold; font-size:16px; text-align:center; }
-canvas { display:block; margin:0 auto 20px; border:1px solid #ccc; background:#eee; }
+canvas { display:block; margin:0 auto 20px; border:1px solid #ccc; }
 #tooltip { position:absolute; padding:6px 10px; background:var(--tooltip-bg); color:var(--tooltip-color); border-radius:4px; pointer-events:none; font-size:0.9rem; display:none; z-index:1000; }
 #legend { display:flex; justify-content:center; gap:15px; margin-bottom:20px; }
 .legend-item { display:flex; align-items:center; gap:5px; font-size:14px; }

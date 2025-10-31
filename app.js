@@ -13,14 +13,13 @@ const gap = 15;
 
 let spotsData = {};
 
-// Initialize 10 spots: Spot 1 reacts to sensor, rest are yellow
+// Initialize 10 spots
 function initializeSpots() {
   for (let i = 1; i <= NUM_SPOTS; i++) {
     spotsData[i] = {
       id: i.toString(),
       distance: 0,
       status: i === 1 ? 'EMPTY' : 'FAILURE',
-      ts: Date.now(),
       occupied: false,
       location: { x: startX + (i-1)*(spotWidth+gap), y: startY },
       color: i === 1 ? 'green' : 'yellow'
@@ -78,7 +77,7 @@ canvas.addEventListener('mousemove', e => {
 });
 
 function startSSE() {
-  const sse = new EventSource('/events');
+  const sse = new EventSource('https://parkway-8fji.onrender.com'); // replace with your Render URL
   sse.addEventListener('init', e => {
     const data = JSON.parse(e.data);
     data.forEach(renderSpot);

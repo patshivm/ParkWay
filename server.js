@@ -1,24 +1,30 @@
 const express = require('express');
-const cors = require('cors');
 const bodyParser = require('body-parser');
-const path = require('path');
+const cors = require('cors');
 
 const app = express();
-const PORT = 3000;
-
-const spots = {};
-let clients = [];
+const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(__dirname));
+app.use(express.static(__dirname)); // serve index.html, app.js, style.css from root
 
-// Serve index.html
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
+// Data structures
+let spots = {};
+const NUM_SPOTS = 10;
+let clients = [];
 
-// SSE endpoint
+// Initialize 10 spots
+for (let i = 1; i <= NUM_SPOTS; i++) {
+  spots[i] = {
+    id: i.toString(),
+    distance: 0,
+    status: i === 1 ? 'EMPTY' : 'FAILURE', // Spot 1 is sensor active
+    occupied: false
+  };
+}
+
+// SSE endpoint for dashboard
 app.get('/events', (req, res) => {
   res.set({
     'Content-Type': 'text/event-stream',
@@ -30,31 +36,40 @@ app.get('/events', (req, res) => {
   const clientId = Date.now();
   clients.push({ id: clientId, res });
 
-  // Send existing spots
-  const flatSpots = Object.values(spots).map(s => ({
-    ...s,
-    location: s.location || { x: 50, y: 50 } // default location
-  }));
-
-  res.write(`event: init\ndata: ${JSON.stringify(flatSpots)}\n\n`);
+  // Send initial state
+  Object.values(spots).forEach(s => {
+    res.write(`event: update\ndata: ${JSON.stringify(s)}\n\n`);
+  });
 
   req.on('close', () => {
     clients = clients.filter(c => c.id !== clientId);
   });
 });
 
+// Broadcast helper
 function broadcast(event, data) {
   const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-  clients.forEach(c => c.res.write(payload));
+  clients.forEach(client => client.res.write(payload));
 }
 
-// ESP32 POST endpoint
+// API endpoint for ESP32
 app.post('/api/parking', (req, res) => {
-  const { spot_id, distance, status, ts, location } = req.body;
+  const { spot_id, distance, status } = req.body;
   const id = spot_id || '1';
-  spots[id] = { distance, status, ts: ts || Date.now(), location, occupied: status === 'OCCUPIED', id };
+  if (!spots[id]) return res.status(400).json({ error: 'Invalid spot id' });
+
+  spots[id] = {
+    id,
+    distance: distance || 0,
+    status: status || 'EMPTY',
+    occupied: status === 'OCCUPIED'
+  };
+
   broadcast('update', spots[id]);
-  res.json({ ok:true, spot_id:id });
+  res.json({ ok: true });
 });
 
-app.listen(PORT, () => console.log(`ParkWay server running at http://localhost:${PORT}`));
+// Start server
+app.listen(PORT, () => {
+  console.log(`ParkWay server running on port ${PORT}`);
+});
