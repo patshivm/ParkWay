@@ -77,7 +77,7 @@ canvas.addEventListener('mousemove', e => {
 });
 
 function startSSE() {
-  const sse = new EventSource('https://parkway-8fji.onrender.com'); // replace with your Render URL
+  const sse = new EventSource('https://parkway-8fji.onrender.com/events'); // correct SSE endpoint
   sse.addEventListener('init', e => {
     const data = JSON.parse(e.data);
     data.forEach(renderSpot);
