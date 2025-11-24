@@ -49,7 +49,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .legend{font-size:0.92rem}
 .legend .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
-.free{background:#4CAF50}.reserved{background:#FFC107}.occupied{background:#F44336}
+.free{background:#4CAF50}.reserved{background:#FFC107}.occupied{background:#F44336}.unknown{background:#FFD700}
 
 .lot-grid{
   display:grid;
@@ -66,7 +66,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 .vertical-road{
   grid-column:2 / 3;
   grid-row:1 / 6;
-  background: linear-gradient(var(--asphalt-dark),var(--asphalt-dark));
+  background: var(--asphalt-dark);
   border-radius:8px;
   position:relative;
   display:flex;
@@ -92,7 +92,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 .hroad{
   grid-column:1 / 4;
   height:var(--hroad-height);
-  background: linear-gradient(var(--asphalt-dark),var(--asphalt-dark));
+  background: var(--asphalt-dark);
   position:relative;
   border-radius:6px;
   z-index:2;
@@ -146,9 +146,9 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 }
 
 /* Slot Colors (dynamic) */
-.slot.free{background:#2b2b2b;border-color:#4CAF50}
-.slot.occupied{background:#2b2b2b;border-color:#F44336}
-.slot.unknown{background:#2b2b2b;border-color:#FFD700}
+.slot.free{border-color:#4CAF50}
+.slot.occupied{border-color:#F44336}
+.slot.unknown{border-color:#FFD700}
 
 /* Entrance & Exit Labels */
 .entrance, .exit{
@@ -194,13 +194,31 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
     <div class="lot-grid" role="region" aria-label="Parking lot map">
       <div class="vertical-road"></div>
 
-      <!-- Example Band -->
+      <!-- ALL BANDS AND SLOTS -->
+      <!-- You should repeat the same structure for all slots: A1–D14 -->
       <div class="band" style="grid-column:1 / 2; grid-row:1 / 2;">
         <div class="park-row">
           <div class="slot free" id="A1"><span class="slot-number">A1</span></div>
           <div class="slot free" id="A2"><span class="slot-number">A2</span></div>
+          <div class="slot free" id="A3"><span class="slot-number">A3</span></div>
+          <div class="slot free" id="A4"><span class="slot-number">A4</span></div>
+          <div class="slot free" id="A5"><span class="slot-number">A5</span></div>
+          <div class="slot free" id="A6"><span class="slot-number">A6</span></div>
+          <div class="slot free" id="A7"><span class="slot-number">A7</span></div>
+        </div>
+        <div class="median"></div>
+        <div class="park-row">
+          <div class="slot free" id="A8"><span class="slot-number">A8</span></div>
+          <div class="slot free" id="A9"><span class="slot-number">A9</span></div>
+          <div class="slot free" id="A10"><span class="slot-number">A10</span></div>
+          <div class="slot free" id="A11"><span class="slot-number">A11</span></div>
+          <div class="slot free" id="A12"><span class="slot-number">A12</span></div>
+          <div class="slot free" id="A13"><span class="slot-number">A13</span></div>
+          <div class="slot free" id="A14"><span class="slot-number">A14</span></div>
         </div>
       </div>
+
+      <!-- Repeat similar bands for B1–B14, C1–C14, D1–D14 -->
 
       <div class="hroad" style="grid-column:1 / 4; grid-row:2 / 3;"></div>
 
@@ -211,7 +229,10 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 </main>
 
 <script>
+let fetching = false;
 async function fetchSlots() {
+  if(fetching) return;
+  fetching = true;
   try {
     const res = await fetch("/api/parking");
     const data = await res.json();
@@ -226,11 +247,13 @@ async function fetchSlots() {
     }
   } catch(err) {
     console.error(err);
+  } finally {
+    fetching = false;
   }
 }
 
-// Fetch every second
-setInterval(fetchSlots,1000);
+// Update every 500ms for near real-time
+setInterval(fetchSlots, 500);
 fetchSlots();
 </script>
 </body>
