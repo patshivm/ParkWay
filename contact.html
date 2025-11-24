@@ -39,7 +39,10 @@
 <footer class="site-footer">
   <small>© <span id="year"></span> Parkway • Smart Parking System</small>
 </footer>
-<script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+<script>
+  window.PAGE = 'CONTACT';
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
 
 </body>
 </html>

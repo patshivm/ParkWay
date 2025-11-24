@@ -7,66 +7,43 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(__dirname)); // serve index.html, app.js, style.css from root
+app.use(express.static(__dirname)); // serve index.html, map.html, booking.html, dashboard.html, app.js, style.css
 
-// Data structures
-let spots = {};
-const NUM_SPOTS = 10;
-let clients = [];
+// Data structure for parking slots
+let slots = {
+  A1: { status: 'free', distance: 0 },
+  A2: { status: 'free', distance: 0 },
+  A3: { status: 'free', distance: 0 },
+  A4: { status: 'free', distance: 0 },
+  B1: { status: 'free', distance: 0 },
+  B2: { status: 'free', distance: 0 },
+  B3: { status: 'free', distance: 0 },
+  B4: { status: 'free', distance: 0 },
+  C1: { status: 'free', distance: 0 },
+  C2: { status: 'free', distance: 0 },
+  C3: { status: 'free', distance: 0 },
+  C4: { status: 'free', distance: 0 },
+  D1: { status: 'free', distance: 0 },
+  D2: { status: 'free', distance: 0 },
+  D3: { status: 'free', distance: 0 },
+  D4: { status: 'free', distance: 0 }
+};
 
-// Initialize 10 spots
-for (let i = 1; i <= NUM_SPOTS; i++) {
-  spots[i] = {
-    id: i.toString(),
-    distance: 0,
-    status: i === 1 ? 'EMPTY' : 'FAILURE', // Spot 1 is sensor active
-    occupied: false
-  };
-}
-
-// SSE endpoint for dashboard
-app.get('/events', (req, res) => {
-  res.set({
-    'Content-Type': 'text/event-stream',
-    'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
-  });
-  res.flushHeaders();
-
-  const clientId = Date.now();
-  clients.push({ id: clientId, res });
-
-  // Send initial state
-  Object.values(spots).forEach(s => {
-    res.write(`event: update\ndata: ${JSON.stringify(s)}\n\n`);
-  });
-
-  req.on('close', () => {
-    clients = clients.filter(c => c.id !== clientId);
-  });
+// API endpoint to get all slot statuses
+app.get('/api/parking', (req, res) => {
+  res.json(Object.fromEntries(Object.entries(slots).map(([k,v]) => [k, v.status])));
 });
 
-// Broadcast helper
-function broadcast(event, data) {
-  const payload = `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
-  clients.forEach(client => client.res.write(payload));
-}
+// API endpoint to update a single slot
+app.post('/api/parking/:id', (req, res) => {
+  const id = req.params.id;
+  const { status, distance } = req.body;
+  if (!slots[id]) return res.status(400).json({ error: 'Invalid slot id' });
 
-// API endpoint for ESP32
-app.post('/api/parking', (req, res) => {
-  const { spot_id, distance, status } = req.body;
-  const id = spot_id || '1';
-  if (!spots[id]) return res.status(400).json({ error: 'Invalid spot id' });
+  slots[id].status = status || slots[id].status;
+  slots[id].distance = distance !== undefined ? distance : slots[id].distance;
 
-  spots[id] = {
-    id,
-    distance: distance || 0,
-    status: status || 'EMPTY',
-    occupied: status === 'OCCUPIED'
-  };
-
-  broadcast('update', spots[id]);
-  res.json({ ok: true });
+  res.json({ ok: true, slot: { id, status: slots[id].status, distance: slots[id].distance } });
 });
 
 // Start server

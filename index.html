@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <title>Parkway • Dashboard</title>
+  <title>Parkway • Home</title>
   
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -25,29 +25,30 @@
   </nav>
 </header>
 
-  <section class="hero full">
-    <div class="hero-overlay"></div>
-    <div class="hero-inner">
-      <h1>Smart Parking. Simple Booking.</h1>
-      <p>Reserve your parking spot in seconds — arrive stress-free.</p>
-      <div class="cta-row">
-        <a class="btn" href="map.html">View Parking Map</a>
-        <a class="btn outline" href="booking.html">My Booking</a>
-      </div>
+<section class="hero full">
+  <div class="hero-overlay"></div>
+  <div class="hero-inner">
+    <h1>Smart Parking. Simple Booking.</h1>
+    <p>Reserve your parking spot in seconds — arrive stress-free.</p>
+    <div class="cta-row">
+      <a class="btn" href="map.html">View Parking Map</a>
+      <a class="btn outline" href="booking.html">My Booking</a>
     </div>
-    <div class="scanline"></div>
+  </div>
+  <div class="scanline"></div>
+</section>
+<main class="container narrow">
+  <section class="panel glass">
+    <h2>Why Parkway?</h2>
+    <p class="muted">Reduce search time, cut emissions, and improve convenience with live slot data, fast reservations, and IoT‑driven occupancy.</p>
   </section>
-  <main class="container narrow">
-    <section class="panel glass">
-      <h2>Why Parkway?</h2>
-      <p class="muted">Reduce search time, cut emissions, and improve convenience with live slot data, fast reservations, and IoT‑driven occupancy.</p>
-    </section>
-  </main>
+</main>
   
 <footer class="site-footer">
   <small>©️ <span id="year"></span> Parkway • Smart Parking System</small>
 </footer>
 <script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+<script>window.PAGE='HOME';</script>
 
 </body>
 </html>
