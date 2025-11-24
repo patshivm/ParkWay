@@ -1,26 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Parkway • Parking Map</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
 <style>
-/* Map-specific asphalt and slot styling */
-.lot-grid {
-  display:grid; grid-template-columns:1fr 120px 1fr; grid-template-rows:auto 72px auto 72px auto;
-  gap:22px; position:relative; padding:28px; border-radius:8px; background:#111;
+:root{
+  --asphalt: #2b2b2b;
+  --asphalt-dark: #1f1f1f;
+  --slot-border: #ffd700; /* yellow lines */
+  --road-width: 120px;
+  --hroad-height: 72px;
+  --gutter: 22px;
 }
-.slot { width:64px; height:96px; border:2px solid #FFD700; border-radius:4px; position:relative; box-shadow: inset 0 -6px 12px rgba(0,0,0,0.3); }
-.slot.free { background:#24ff6d; } .slot.occupied { background:#ff5252; } .slot.unknown { background:#ffd056; }
-.slot-number { position:absolute; bottom:4px; right:4px; font-size:.65rem; color:#fff; }
-.vertical-road { grid-column:2 / 3; grid-row:1 / 6; background:linear-gradient(#444,#333); border-radius:8px; position:relative; }
-.vertical-road::after { content:""; position:absolute; left:50%; top:0; width:6px; height:100%; background:repeating-linear-gradient(to bottom, #fff 0 18px, transparent 18px 36px); transform:translateX(-50%);}
-.hroad { grid-column:1 / 4; height:72px; background:linear-gradient(#444,#333); position:relative; border-radius:6px; }
-.hroad::before { content:""; position:absolute; left:0; top:50%; width:100%; height:6px; background:repeating-linear-gradient(to right, #fff 0 24px, transparent 24px 48px); transform:translateY(-50%);}
-.entrance, .exit { position:absolute; top:-22px; left:50%; transform:translateX(-50%); background:#4CAF50;color:#fff;padding:6px 10px;border-radius:6px;font-weight:700;}
-.exit { bottom:-22px; background:#F44336; }
+
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  font-family:"Poppins",sans-serif;
+  background:var(--asphalt);
+  color:#fff;
+}
+
+header.topbar{
+  background:#222;
+  color:#b32b2b;
+  padding:.6rem 1.75rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
+
+.container{
+  max-width:1400px;
+  margin:1.75rem auto;
+  padding:0 1rem;
+}
+
+.panel{
+  background:var(--asphalt-dark);
+  border-radius:10px;
+  padding:1rem;
+  box-shadow:0 6px 20px rgba(0,0,0,0.08);
+}
+
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.legend{font-size:0.92rem}
+.legend .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.free{background:#4CAF50}.reserved{background:#FFC107}.occupied{background:#F44336}
+
+.lot-grid{
+  display:grid;
+  grid-template-columns: 1fr var(--road-width) 1fr;
+  grid-template-rows: auto var(--hroad-height) auto var(--hroad-height) auto;
+  gap: var(--gutter);
+  position:relative;
+  padding:28px;
+  border-radius:8px;
+  background: var(--asphalt);
+}
+
+/* Roads */
+.vertical-road{
+  grid-column:2 / 3;
+  grid-row:1 / 6;
+  background: linear-gradient(var(--asphalt-dark),var(--asphalt-dark));
+  border-radius:8px;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2;
+}
+.vertical-road::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  transform:translateX(-50%);
+  width:6px;
+  height:100%;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    #fff 0 18px,
+    transparent 18px 36px
+  );
+  opacity:0.8;
+}
+.hroad{
+  grid-column:1 / 4;
+  height:var(--hroad-height);
+  background: linear-gradient(var(--asphalt-dark),var(--asphalt-dark));
+  position:relative;
+  border-radius:6px;
+  z-index:2;
+}
+.hroad::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  height:6px;
+  width:100%;
+  background-image: repeating-linear-gradient(
+    to right,
+    #fff 0 24px,
+    transparent 24px 48px
+  );
+}
+
+/* Parking Slots */
+.band{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:6px 6px;
+}
+.park-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:flex-start;
+}
+.slot{
+  width:64px;
+  height:96px;
+  background:var(--asphalt-dark);
+  border:2px solid var(--slot-border);
+  border-radius:4px;
+  color:#fff;
+  font-weight:700;
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-end;
+  position:relative;
+  z-index:3;
+}
+.slot-number{
+  font-size:.65rem;
+  opacity:0.95;
+  padding:2px 4px;
+}
+
+/* Slot Colors (dynamic) */
+.slot.free{background:#2b2b2b;border-color:#4CAF50}
+.slot.occupied{background:#2b2b2b;border-color:#F44336}
+.slot.unknown{background:#2b2b2b;border-color:#FFD700}
+
+/* Entrance & Exit Labels */
+.entrance, .exit{
+  position:absolute;
+  padding:6px 10px;
+  border-radius:6px;
+  font-weight:700;
+  z-index:5;
+}
+.entrance{top:-20px; left:50%; transform:translateX(-50%); background:#4CAF50;}
+.exit{bottom:-20px; left:50%; transform:translateX(-50%); background:#F44336;}
+
+@media (max-width:900px){
+  .lot-grid{grid-template-columns: 1fr 96px 1fr; padding:18px}
+  .slot{width:52px;height:82px}
+}
 </style>
 </head>
 <body>
@@ -37,30 +181,28 @@
 </header>
 
 <main class="container">
-  <section class="panel glass">
+  <section class="panel">
     <div class="panel-head">
       <h2>Live Parking Map</h2>
       <div class="legend">
-        <span class="dot free"></span> Free &nbsp;
-        <span class="dot occupied"></span> Occupied &nbsp;
+        <span class="dot free"></span> Free
+        <span class="dot occupied"></span> Occupied
         <span class="dot unknown"></span> Unknown
       </div>
     </div>
 
-    <div class="lot-grid" id="parkingLot">
+    <div class="lot-grid" role="region" aria-label="Parking lot map">
       <div class="vertical-road"></div>
 
-      <!-- Top-left band -->
-      <div class="band" style="grid-column:1/2;grid-row:1/2">
+      <!-- Example Band -->
+      <div class="band" style="grid-column:1 / 2; grid-row:1 / 2;">
         <div class="park-row">
-          <div class="slot unknown" id="A1"><span class="slot-number">A1</span></div>
-          <div class="slot unknown" id="A2"><span class="slot-number">A2</span></div>
-          <div class="slot unknown" id="A3"><span class="slot-number">A3</span></div>
+          <div class="slot free" id="A1"><span class="slot-number">A1</span></div>
+          <div class="slot free" id="A2"><span class="slot-number">A2</span></div>
         </div>
       </div>
 
-      <!-- Horizontal road -->
-      <div class="hroad" style="grid-column:1/4; grid-row:2/3;"></div>
+      <div class="hroad" style="grid-column:1 / 4; grid-row:2 / 3;"></div>
 
       <div class="entrance">ENTRANCE</div>
       <div class="exit">EXIT</div>
@@ -72,25 +214,24 @@
 async function fetchSlots() {
   try {
     const res = await fetch("/api/parking");
-    if (!res.ok) throw new Error("Network response not OK");
     const data = await res.json();
     for (const id in data) {
-      const el = document.getElementById(id);
-      if(!el) continue;
-      el.classList.remove("free","occupied","unknown");
-      if(data[id]==="EMPTY") el.classList.add("free");
-      else if(data[id]==="OCCUPIED") el.classList.add("occupied");
-      else el.classList.add("unknown");
+      const slotEl = document.getElementById(id);
+      if(slotEl){
+        slotEl.classList.remove("free","occupied","unknown");
+        if(data[id] === "EMPTY") slotEl.classList.add("free");
+        else if(data[id] === "OCCUPIED") slotEl.classList.add("occupied");
+        else slotEl.classList.add("unknown");
+      }
     }
-  } catch(err){ console.error(err); }
+  } catch(err) {
+    console.error(err);
+  }
 }
+
+// Fetch every second
 setInterval(fetchSlots,1000);
 fetchSlots();
 </script>
-
-<footer class="site-footer">
-  <small>©️ <span id="year"></span> Parkway • Smart Parking System</small>
-</footer>
-<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
