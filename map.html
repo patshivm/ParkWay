@@ -1,15 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Parkway • Parking Map</title>
-  
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css"/>
-
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parkway • Parking Map</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  .map-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    max-width: 400px;
+    margin: 1rem auto;
+  }
+  .slot {
+    position: relative;
+    padding: 1rem;
+    border-radius: 8px;
+    font-weight: bold;
+    text-align: center;
+    color: white;
+    user-select: none;
+  }
+  .free { background-color: #28a745; }
+  .occupied { background-color: #dc3545; }
+  .unknown { background-color: #ffc107; color: #212529; }
+  .slot-number { display: block; font-size: 1.2rem; }
+  .badge { display: block; margin-top: 0.25rem; font-size: 0.8rem; font-weight: normal; }
+</style>
 </head>
 <body>
 <header class="topbar">
@@ -24,72 +42,69 @@
   </nav>
 </header>
 
-<main class="container narrow">
+<main class="container">
   <section class="panel glass">
-    <h2>Live Parking Map</h2>
-    <div class="legend">
-      <span class="dot free"></span> Free
-      <span class="dot reserved"></span> Reserved
-      <span class="dot occupied"></span> Occupied
+    <div class="panel-head">
+      <h2>Live Parking Map</h2>
+      <div class="legend">
+        <span class="dot free"></span> Free &nbsp;
+        <span class="dot occupied"></span> Occupied &nbsp;
+        <span class="dot unknown"></span> Unknown &nbsp;
+      </div>
     </div>
 
-    <div class="map-grid">
-      <div class="slot free" id="A1">A1<span class="slot-id">A1</span></div>
-      <div class="slot reserved" id="A2">A2<span class="slot-id">A2</span></div>
-      <div class="slot occupied" id="A3">A3<span class="slot-id">A3</span></div>
-      <div class="slot free" id="A4">A4<span class="slot-id">A4</span></div>
-
-      <div class="slot free" id="B1">B1<span class="slot-id">B1</span></div>
-      <div class="slot reserved" id="B2">B2<span class="slot-id">B2</span></div>
-      <div class="slot occupied" id="B3">B3<span class="slot-id">B3</span></div>
-      <div class="slot free" id="B4">B4<span class="slot-id">B4</span></div>
-
-      <div class="slot free" id="C1">C1<span class="slot-id">C1</span></div>
-      <div class="slot reserved" id="C2">C2<span class="slot-id">C2</span></div>
-      <div class="slot occupied" id="C3">C3<span class="slot-id">C3</span></div>
-      <div class="slot free" id="C4">C4<span class="slot-id">C4</span></div>
-
-      <div class="slot free" id="D1">D1<span class="slot-id">D1</span></div>
-      <div class="slot reserved" id="D2">D2<span class="slot-id">D2</span></div>
-      <div class="slot occupied" id="D3">D3<span class="slot-id">D3</span></div>
-      <div class="slot free" id="D4">D4<span class="slot-id">D4</span></div>
+    <div class="map-grid" role="region" aria-label="Parking lot map">
+      <div class="slot free" id="A1"><span class="slot-number">A1</span></div>
+      <div class="slot free" id="A2"><span class="slot-number">A2</span></div>
+      <div class="slot free" id="A3"><span class="slot-number">A3</span></div>
+      <div class="slot free" id="A4"><span class="slot-number">A4</span></div>
+      <div class="slot free" id="B1"><span class="slot-number">B1</span></div>
+      <div class="slot free" id="B2"><span class="slot-number">B2</span></div>
+      <div class="slot free" id="B3"><span class="slot-number">B3</span></div>
+      <div class="slot free" id="B4"><span class="slot-number">B4</span></div>
     </div>
+
+    <p class="mini-note">
+      Slots update based on ESP32 sensor data. Green = Free, Red = Occupied, Yellow = Unknown.
+    </p>
   </section>
 </main>
 
 <script>
-  const serverURL = "https://parkway-8fji.onrender.com/api/parking";
+const serverURL = "/api/parking";
 
-  async function fetchSlots() {
-    try {
-      const res = await fetch(serverURL);
-      if (!res.ok) throw new Error("Network response not OK");
-      const data = await res.json();
-      updateMap(data);
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
+async function fetchSlots() {
+  try {
+    const res = await fetch(serverURL);
+    if (!res.ok) throw new Error("Network response not OK");
+    const data = await res.json();
+    updateMap(data);
+  } catch (err) {
+    console.error("Fetch error:", err);
   }
+}
 
-  function updateMap(slots) {
-    for (const id in slots) {
-      const el = document.getElementById(id);
-      if (!el) continue;
+function updateMap(slots) {
+  for (const id in slots) {
+    const el = document.getElementById(id);
+    if (!el) continue;
 
-      const status = slots[id].toLowerCase();
-      el.classList.remove("free", "reserved", "occupied");
-      el.classList.add(status);
+    el.classList.remove("free", "occupied", "unknown");
 
-      el.innerHTML = `<span class="slot-number">${id}</span>
-                      <span class="badge ${status}">${status.toUpperCase()}</span>`;
-    }
+    const status = slots[id];
+    if (status === "EMPTY") el.classList.add("free");
+    else if (status === "OCCUPIED") el.classList.add("occupied");
+    else el.classList.add("UNKNOWN");
+
+    el.innerHTML = `<span class="slot-number">${id}</span>
+                    <span class="badge ${el.classList[0]}">${status}</span>`;
   }
+}
 
-  // Fetch data every 1 second
-  setInterval(fetchSlots, 1000);
-
-  // Initial fetch
-  fetchSlots();
+// Fetch every second
+setInterval(fetchSlots, 1000);
+fetchSlots();
 </script>
+
 </body>
 </html>
