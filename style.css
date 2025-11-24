@@ -144,48 +144,72 @@ body {
   margin:50px auto;
   max-width:900px;
   display:grid;
-  grid-template-columns:repeat(4, 1fr);
-  gap:20px;
+  grid-template-columns:repeat(5, 1fr);
+  gap:16px;
 }
 
 .slot {
   position:relative;
-  padding:28px;
-  border-radius:16px;
-  background:rgba(255,255,255,0.06);
-  border:1px solid rgba(255,255,255,0.1);
+  padding:24px;
+  border-radius:18px;
+  background:rgba(255,255,255,0.07);
+  border:1.5px solid rgba(255,255,255,0.12);
   cursor:pointer;
-  transition:0.18s;
+  transition:0.25s ease;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
 }
 
 .slot:hover {
-  background:rgba(255,255,255,0.12);
+  background:rgba(255,255,255,0.15);
+  box-shadow: 0 0 20px #1e90ff;
+  border-color: #1e90ff;
 }
 
 .badge {
   position:absolute;
-  top:10px;
-  right:10px;
-  padding:4px 12px;
-  font-size:0.75rem;
-  font-weight:600;
-  border-radius:14px;
+  top:8px;
+  right:8px;
+  padding:5px 14px;
+  font-size:0.8rem;
+  font-weight:700;
+  border-radius:16px;
   text-transform:uppercase;
+  box-shadow: 0 0 6px rgba(0,0,0,0.2);
 }
 
-.badge.free { background:#24ff6d33; color:#24ff6d; }
-.badge.reserved { background:#ffd05633; color:#ffd056; }
-.badge.occupied { background:#ff525233; color:#ff5252; }
+.badge.free { background: rgba(36,255,109,0.25); color:#24ff6d; box-shadow: 0 0 8px #24ff6d; }
+.badge.reserved { background: rgba(255,208,86,0.25); color:#ffd056; box-shadow: 0 0 8px #ffd056; }
+.badge.occupied { background: rgba(255,82,82,0.25); color:#ff5252; box-shadow: 0 0 8px #ff5252; }
+
+.slot.free { background:#121212; border-color:#24ff6d; box-shadow: 0 0 10px #24ff6d33; }
+.slot.reserved { background:#121212; border-color:#ffd056; box-shadow: 0 0 10px #ffd05633; }
+.slot.occupied { background:#121212; border-color:#ff5252; box-shadow: 0 0 10px #ff525233; }
 
 .slot-id {
-  font-size:1.8rem;
+  font-size:1.85rem;
   font-weight:700;
-  margin-bottom:12px;
+  margin-bottom:10px;
+  letter-spacing: 0.05em;
 }
 
 .slot-meta {
-  color:#9fb0c3;
-  font-size:0.95rem;
+  color:#a0b2d8;
+  font-size:1rem;
+  font-weight:500;
+  user-select:none;
+  transition: color 0.2s;
+}
+
+.slot.free .slot-meta {
+  color:#24ff6dcc;
+}
+
+.slot.reserved .slot-meta {
+  color:#ffd056cc;
+}
+
+.slot.occupied .slot-meta {
+  color:#ff5252cc;
 }
 
 /* ========== MODAL ========== */

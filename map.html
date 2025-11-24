@@ -57,8 +57,39 @@
   </section>
 </main>
 
-<script>window.PAGE='MAP';</script>
-<script src="app.js"></script>
+<script>
+  const serverURL = "https://parkway-8fji.onrender.com/api/parking";
 
+  async function fetchSlots() {
+    try {
+      const res = await fetch(serverURL);
+      if (!res.ok) throw new Error("Network response not OK");
+      const data = await res.json();
+      updateMap(data);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  }
+
+  function updateMap(slots) {
+    for (const id in slots) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+
+      const status = slots[id].toLowerCase();
+      el.classList.remove("free", "reserved", "occupied");
+      el.classList.add(status);
+
+      el.innerHTML = `<span class="slot-number">${id}</span>
+                      <span class="badge ${status}">${status.toUpperCase()}</span>`;
+    }
+  }
+
+  // Fetch data every 1 second
+  setInterval(fetchSlots, 1000);
+
+  // Initial fetch
+  fetchSlots();
+</script>
 </body>
 </html>
