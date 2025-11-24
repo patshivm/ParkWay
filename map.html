@@ -193,32 +193,44 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
     <div class="lot-grid" role="region" aria-label="Parking lot map">
       <div class="vertical-road"></div>
 
-      <!-- BANDS: A, B, C, D -->
+      <!-- Bands: A–D with 5 slots each -->
       <div class="band" style="grid-column:1 / 2; grid-row:1 / 2;">
         <div class="park-row">
-          <!-- A1–A14 -->
-          ${[...Array(14)].map((_,i)=>`<div class="slot free" id="A${i+1}"><span class="slot-number">A${i+1}</span></div>`).join('')}
+          <div class="slot free" id="A1"><span class="slot-number">A1</span></div>
+          <div class="slot free" id="A2"><span class="slot-number">A2</span></div>
+          <div class="slot free" id="A3"><span class="slot-number">A3</span></div>
+          <div class="slot free" id="A4"><span class="slot-number">A4</span></div>
+          <div class="slot free" id="A5"><span class="slot-number">A5</span></div>
         </div>
       </div>
 
       <div class="band" style="grid-column:3 / 4; grid-row:1 / 2;">
         <div class="park-row">
-          <!-- B1–B14 -->
-          ${[...Array(14)].map((_,i)=>`<div class="slot free" id="B${i+1}"><span class="slot-number">B${i+1}</span></div>`).join('')}
+          <div class="slot free" id="B1"><span class="slot-number">B1</span></div>
+          <div class="slot free" id="B2"><span class="slot-number">B2</span></div>
+          <div class="slot free" id="B3"><span class="slot-number">B3</span></div>
+          <div class="slot free" id="B4"><span class="slot-number">B4</span></div>
+          <div class="slot free" id="B5"><span class="slot-number">B5</span></div>
         </div>
       </div>
 
       <div class="band" style="grid-column:1 / 2; grid-row:3 / 4;">
         <div class="park-row">
-          <!-- C1–C14 -->
-          ${[...Array(14)].map((_,i)=>`<div class="slot free" id="C${i+1}"><span class="slot-number">C${i+1}</span></div>`).join('')}
+          <div class="slot free" id="C1"><span class="slot-number">C1</span></div>
+          <div class="slot free" id="C2"><span class="slot-number">C2</span></div>
+          <div class="slot free" id="C3"><span class="slot-number">C3</span></div>
+          <div class="slot free" id="C4"><span class="slot-number">C4</span></div>
+          <div class="slot free" id="C5"><span class="slot-number">C5</span></div>
         </div>
       </div>
 
       <div class="band" style="grid-column:3 / 4; grid-row:3 / 4;">
         <div class="park-row">
-          <!-- D1–D14 -->
-          ${[...Array(14)].map((_,i)=>`<div class="slot free" id="D${i+1}"><span class="slot-number">D${i+1}</span></div>`).join('')}
+          <div class="slot free" id="D1"><span class="slot-number">D1</span></div>
+          <div class="slot free" id="D2"><span class="slot-number">D2</span></div>
+          <div class="slot free" id="D3"><span class="slot-number">D3</span></div>
+          <div class="slot free" id="D4"><span class="slot-number">D4</span></div>
+          <div class="slot free" id="D5"><span class="slot-number">D5</span></div>
         </div>
       </div>
 
