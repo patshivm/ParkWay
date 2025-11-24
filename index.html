@@ -1,43 +1,53 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ParkWay Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Parkway • Dashboard</title>
+  
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css"/>
+
 </head>
 <body>
+  
+<header class="topbar">
+  <div class="brand"><a href="index.html">🚗 Parkway</a></div>
+  <nav class="navlinks">
+    <a href="index.html">Home</a>
+    <a href="map.html">Parking Map</a>
+    <a href="booking.html">My Booking</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="about.html">How It Works</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
 
-  <!-- Header -->
-  <header style="text-align:center; padding:15px; background-color:#6366f1; color:white;">
-    <h1 style="margin:0;">ParkWay Dashboard</h1>
-
-    <!-- Totals display -->
-    <div id="totals" style="margin-top:10px; font-weight:bold; font-size:16px;">
-      <span id="total-occupied">Occupied: 0</span> |
-      <span id="total-available">Available: 0</span>
+  <section class="hero full">
+    <div class="hero-overlay"></div>
+    <div class="hero-inner">
+      <h1>Smart Parking. Simple Booking.</h1>
+      <p>Reserve your parking spot in seconds — arrive stress-free.</p>
+      <div class="cta-row">
+        <a class="btn" href="map.html">View Parking Map</a>
+        <a class="btn outline" href="booking.html">My Booking</a>
+      </div>
     </div>
+    <div class="scanline"></div>
+  </section>
+  <main class="container narrow">
+    <section class="panel glass">
+      <h2>Why Parkway?</h2>
+      <p class="muted">Reduce search time, cut emissions, and improve convenience with live slot data, fast reservations, and IoT‑driven occupancy.</p>
+    </section>
+  </main>
+  
+<footer class="site-footer">
+  <small>©️ <span id="year"></span> Parkway • Smart Parking System</small>
+</footer>
+<script>document.getElementById('year').textContent=new Date().getFullYear();</script>
 
-    <!-- Color legend -->
-    <div id="legend" style="display:flex; justify-content:center; gap:15px; margin-top:10px;">
-      <div class="legend-item" style="display:flex; align-items:center; gap:5px; font-size:14px;">
-        <div class="legend-color legend-occupied" style="width:20px; height:20px; background:red; border:1px solid #333;"></div> Occupied
-      </div>
-      <div class="legend-item" style="display:flex; align-items:center; gap:5px; font-size:14px;">
-        <div class="legend-color legend-available" style="width:20px; height:20px; background:green; border:1px solid #333;"></div> Available
-      </div>
-      <div class="legend-item" style="display:flex; align-items:center; gap:5px; font-size:14px;">
-        <div class="legend-color legend-failure" style="width:20px; height:20px; background:yellow; border:1px solid #333;"></div> Sensor Failure
-      </div>
-    </div>
-  </header>
-
-  <!-- Parking lot canvas -->
-  <canvas id="parking-map" width="850" height="220" aria-label="Parking lot map" role="img" style="display:block; margin:20px auto; border:1px solid #ccc;"></canvas>
-
-  <!-- Tooltip -->
-  <div id="tooltip" aria-live="polite" aria-atomic="true"></div>
-
-  <!-- JS -->
-  <script src="app.js"></script>
 </body>
 </html>
