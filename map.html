@@ -1,32 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Parkway • Parking Map</title>
-<link rel="stylesheet" href="style.css">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Parkway • Parking Map — Grid Roads</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-  .map-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
-    max-width: 400px;
-    margin: 1rem auto;
-  }
-  .slot {
-    position: relative;
-    padding: 1rem;
-    border-radius: 8px;
-    font-weight: bold;
-    text-align: center;
-    color: white;
-    user-select: none;
-  }
-  .free { background-color: #28a745; }
-  .occupied { background-color: #dc3545; }
-  .unknown { background-color: #ffc107; color: #212529; }
-  .slot-number { display: block; font-size: 1.2rem; }
-  .badge { display: block; margin-top: 0.25rem; font-size: 0.8rem; font-weight: normal; }
+:root{
+  --bg: #0f2027;
+  --asphalt: #444;
+  --asphalt-dark: #333;
+  --slot-gray: #070707;
+  --slot-border: #000000;
+  --median: #6b6b6b;
+  --road-width: 120px;
+  --hroad-height: 72px;
+  --gutter: 22px;
+
+  --free: #4CAF50;
+  --reserved: #FFC107;
+  --occupied: #F44336;
+  --unknown: #ffc107;
+}
+
+*{box-sizing:border-box;}
+body{margin:0;font-family:"Poppins",sans-serif;background:var(--bg);color:#e6e2e2;}
+header.topbar{background:#222;color:#b32b2b;padding:.6rem 1.75rem;display:flex;align-items:center;justify-content:space-between;}
+header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
+.container{max-width:1400px;margin:1.75rem auto;padding:0 1rem;}
+.panel{background:var(--bg);border-radius:10px;padding:1rem;box-shadow:0 6px 20px rgba(0,0,0,0.08);}
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.legend{font-size:0.92rem}
+.legend .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.free{background:var(--free)}
+.reserved{background:var(--reserved)}
+.occupied{background:var(--occupied)}
+.unknown{background:var(--unknown)}
+
+.lot-grid{
+  display:grid;
+  grid-template-columns: 1fr var(--road-width) 1fr;
+  grid-template-rows: auto var(--hroad-height) auto var(--hroad-height) auto;
+  gap: var(--gutter);
+  position:relative;
+  background: #f3f2f2;
+  padding:28px;
+  border-radius:8px;
+  overflow:visible;
+}
+
+.vertical-road{
+  grid-column:2 / 3;
+  grid-row:1 / 6;
+  background: linear-gradient(#444,#3b3b3b);
+  border-radius:8px;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2;
+}
+.vertical-road::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  transform:translateX(-50%);
+  width:6px;
+  height:100%;
+  background-image: repeating-linear-gradient(to bottom,#fff 0 18px,transparent 18px 36px);
+  opacity:0.95;
+}
+
+.hroad{
+  grid-column:1 / 4;
+  height:var(--hroad-height);
+  background: linear-gradient(#444,#3b3b3b);
+  position:relative;
+  border-radius:6px;
+  z-index:2;
+}
+.hroad::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  height:6px;
+  width:100%;
+  background-image: repeating-linear-gradient(to right,#fff 0 24px,transparent 24px 48px);
+}
+
+.band{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:6px 6px;
+}
+
+.park-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:flex-start;
+}
+
+.slot{
+  width:64px;
+  height:96px;
+  border-radius:6px;
+  color:#fff;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  z-index:3;
+  box-shadow: inset 0 -6px 12px rgba(0,0,0,0.08);
+  cursor:pointer;
+}
+.slot-number{position:absolute;bottom:6px;right:6px;font-size:.65rem;opacity:0.95;}
+
+.entrance{
+  position:absolute;
+  top:-22px;
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--free);color:#fff;padding:6px 10px;border-radius:6px;z-index:5;font-weight:700;
+}
+.exit{
+  position:absolute;
+  bottom:-22px;
+  left:50%;
+  transform:translateX(-50%);
+  background:var(--occupied);color:#fff;padding:6px 10px;border-radius:6px;z-index:5;font-weight:700;
+}
+
+@media (max-width:900px){
+  .lot-grid{grid-template-columns: 1fr 96px 1fr; padding:18px}
+  .slot{width:52px;height:82px}
+}
 </style>
 </head>
 <body>
@@ -43,33 +156,39 @@
 </header>
 
 <main class="container">
-  <section class="panel glass">
+  <section class="panel">
     <div class="panel-head">
       <h2>Live Parking Map</h2>
       <div class="legend">
         <span class="dot free"></span> Free &nbsp;
+        <span class="dot reserved"></span> Reserved &nbsp;
         <span class="dot occupied"></span> Occupied &nbsp;
-        <span class="dot unknown"></span> Unknown &nbsp;
       </div>
     </div>
 
-    <div class="map-grid" role="region" aria-label="Parking lot map">
-      <div class="slot free" id="A1"><span class="slot-number">A1</span></div>
-      <div class="slot free" id="A2"><span class="slot-number">A2</span></div>
-      <div class="slot free" id="A3"><span class="slot-number">A3</span></div>
-      <div class="slot free" id="A4"><span class="slot-number">A4</span></div>
-      <div class="slot free" id="B1"><span class="slot-number">B1</span></div>
-      <div class="slot free" id="B2"><span class="slot-number">B2</span></div>
-      <div class="slot free" id="B3"><span class="slot-number">B3</span></div>
-      <div class="slot free" id="B4"><span class="slot-number">B4</span></div>
+    <div class="lot-grid" role="region" aria-label="Parking lot map">
+      <div class="vertical-road" aria-hidden="true"></div>
+
+      <!-- TOP BAND: left -->
+      <div class="band" style="grid-column:1 / 2; grid-row:1 / 2;">
+        <div class="park-row">
+          <div class="slot unknown" id="A1">A1<span class="slot-number">A1</span></div>
+          <div class="slot unknown" id="A2">A2<span class="slot-number">A2</span></div>
+          <div class="slot unknown" id="A3">A3<span class="slot-number">A3</span></div>
+          <div class="slot unknown" id="A4">A4<span class="slot-number">A4</span></div>
+        </div>
+      </div>
+
+      <div class="hroad" style="grid-column:1 / 4; grid-row:2 / 3;"></div>
     </div>
 
     <p class="mini-note">
-      Slots update based on ESP32 sensor data. Green = Free, Red = Occupied, Yellow = Unknown.
+      ESP32 sets <span class="dot occupied"></span> OCCUPIED based on sensors. Green = Free, Red = Occupied, Yellow = Unknown.
     </p>
   </section>
 </main>
 
+<!-- Live update script -->
 <script>
 const serverURL = "/api/parking";
 
@@ -89,22 +208,19 @@ function updateMap(slots) {
     const el = document.getElementById(id);
     if (!el) continue;
 
-    el.classList.remove("free", "occupied", "unknown");
+    el.classList.remove("free","occupied","reserved","unknown");
 
     const status = slots[id];
     if (status === "EMPTY") el.classList.add("free");
     else if (status === "OCCUPIED") el.classList.add("occupied");
-    else el.classList.add("UNKNOWN");
+    else el.classList.add("unknown");
 
-    el.innerHTML = `<span class="slot-number">${id}</span>
-                    <span class="badge ${el.classList[0]}">${status}</span>`;
+    el.querySelector(".slot-number").textContent = id;
   }
 }
 
-// Fetch every second
 setInterval(fetchSlots, 1000);
 fetchSlots();
 </script>
-
 </body>
 </html>
