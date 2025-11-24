@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Parkway • How It Works</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parkway • How It Works</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <header class="topbar">
   <div class="brand"><a href="index.html">🚗 Parkway</a></div>
   <nav class="navlinks">
@@ -31,26 +27,25 @@
       <div class="step">
         <div class="step-num">1</div>
         <h3>Detect</h3>
-        <p>Ultrasonic sensors (HC‑SR04) detect vehicles in each parking slot.</p>
+        <p>Ultrasonic sensors (HC‑SR04) measure distance to detect presence of a vehicle.</p>
       </div>
       <div class="step">
         <div class="step-num">2</div>
         <h3>Update</h3>
-        <p>ESP32 sends live slot status to Firebase. The website receives real-time updates.</p>
+        <p>ESP32 sends slot status to the server. The website listens for live updates.</p>
       </div>
       <div class="step">
         <div class="step-num">3</div>
         <h3>Book</h3>
-        <p>Users reserve free slots. Bookings can auto-expire to keep slots available.</p>
+        <p>Users reserve free slots. Reservations auto‑expire for fairness and turnover.</p>
       </div>
     </div>
   </section>
 </main>
 
 <footer class="site-footer">
-  <small>© <span id="year"></span> Parkway • Smart Parking System</small>
+  <small>©️ <span id="year"></span> Parkway • Smart Parking System</small>
 </footer>
-<script>document.getElementById('year').textContent=new Date().getFullYear();</script>
-
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

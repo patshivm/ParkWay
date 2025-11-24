@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Parkway • Dashboard</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parkway • Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <header class="topbar">
   <div class="brand"><a href="index.html">🚗 Parkway</a></div>
   <nav class="navlinks">
@@ -24,33 +20,36 @@
   </nav>
 </header>
 
-<main class="container narrow">
+<main class="container">
   <section class="panel glass">
     <h2>Dashboard</h2>
-    <div class="stats-grid">
-      <div class="stat-box">
-        <div class="stat-value" id="statTotal">0</div>
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-num" id="statTotal">0</div>
         <div class="stat-label">Total Slots</div>
       </div>
-      <div class="stat-box">
-        <div class="stat-value free" id="statFree">0</div>
+      <div class="stat">
+        <div class="stat-num free" id="statFree">0</div>
         <div class="stat-label">Free</div>
       </div>
-      <div class="stat-box">
-        <div class="stat-value reserved" id="statReserved">0</div>
+      <div class="stat">
+        <div class="stat-num reserved" id="statReserved">0</div>
         <div class="stat-label">Reserved</div>
       </div>
-      <div class="stat-box">
-        <div class="stat-value occupied" id="statOccupied">0</div>
+      <div class="stat">
+        <div class="stat-num occupied" id="statOccupied">0</div>
         <div class="stat-label">Occupied</div>
       </div>
     </div>
-    <canvas id="usageChart" width="900" height="300"></canvas>
+    <canvas id="usageChart" width="900" height="300" class="chart"></canvas>
   </section>
 </main>
 
-<script>window.PAGE='DASHBOARD';</script>
+<footer class="site-footer">
+  <small>©️ <span id="year"></span> Parkway • Smart Parking System</small>
+</footer>
 <script src="app.js"></script>
-
+<script>window.PAGE='DASHBOARD';</script>
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>

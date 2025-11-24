@@ -1,17 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Parkway • My Booking</title>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css"/>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parkway • My Booking</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-
 <header class="topbar">
   <div class="brand"><a href="index.html">🚗 Parkway</a></div>
   <nav class="navlinks">
@@ -33,8 +29,12 @@
   </section>
 </main>
 
-<script>window.PAGE='BOOKING';</script>
-<script src="app.js"></script>
+<footer class="site-footer">
+  <small>©️ <span id="year"></span> Parkway • Smart Parking System</small>
+</footer>
 
+<script src="app.js"></script>
+<script>window.PAGE='BOOKING';</script>
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
