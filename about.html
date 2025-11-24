@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parkway • How It Works</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><a href="index.html">🚗 Parkway</a></div>
+  <nav class="navlinks">
+    <a href="index.html">Home</a>
+    <a href="map.html">Parking Map</a>
+    <a href="booking.html">My Booking</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="about.html">How It Works</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<main class="container narrow">
+  <section class="panel glass">
+    <h2>How It Works</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Detect</h3>
+        <p>Ultrasonic sensors (HC‑SR04) detect vehicles in each parking slot.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Update</h3>
+        <p>ESP32 sends live slot status to Firebase. The website receives real-time updates.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Book</h3>
+        <p>Users reserve free slots. Bookings can auto-expire to keep slots available.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <small>© <span id="year"></span> Parkway • Smart Parking System</small>
+</footer>
+<script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+
+</body>
+</html>

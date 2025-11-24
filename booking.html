@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parkway • My Booking</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><a href="index.html">🚗 Parkway</a></div>
+  <nav class="navlinks">
+    <a href="index.html">Home</a>
+    <a href="map.html">Parking Map</a>
+    <a href="booking.html">My Booking</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="about.html">How It Works</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<main class="container narrow">
+  <section class="panel glass center">
+    <h2>Your Booking</h2>
+    <div id="bookingInfo" class="booking-card">No active booking.</div>
+    <button id="releaseBtn" class="btn outline mt">Release My Slot</button>
+    <p class="muted small mt">Tip: Select a slot on the <a href="map.html">Parking Map</a> to reserve.</p>
+  </section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="app.js"></script>
+<script>window.PAGE='BOOKING';</script>
+
+</body>
+</html>

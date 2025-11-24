@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parkway • Dashboard</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><a href="index.html">🚗 Parkway</a></div>
+  <nav class="navlinks">
+    <a href="index.html">Home</a>
+    <a href="map.html">Parking Map</a>
+    <a href="booking.html">My Booking</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="about.html">How It Works</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+</header>
+
+<main class="container narrow">
+  <section class="panel glass">
+    <h2>Dashboard</h2>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-label">Total Slots</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value free" id="statFree">0</div>
+        <div class="stat-label">Free</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value reserved" id="statReserved">0</div>
+        <div class="stat-label">Reserved</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value occupied" id="statOccupied">0</div>
+        <div class="stat-label">Occupied</div>
+      </div>
+    </div>
+    <canvas id="usageChart" width="900" height="300"></canvas>
+  </section>
+</main>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="app.js"></script>
+<script>window.PAGE='DASHBOARD';</script>
+
+</body>
+</html>
