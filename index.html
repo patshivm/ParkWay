@@ -1,13 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Parkway • Home</title>
+  <title>Parkway • Home</title>
+  
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css"/>
+
 </head>
 <body>
+  
 <header class="topbar">
   <div class="brand"><a href="index.html">🚗 Parkway</a></div>
   <nav class="navlinks">
@@ -23,25 +28,68 @@
 <section class="hero full">
   <div class="hero-overlay"></div>
   <div class="hero-inner">
-    <h1>Smart Parking. Simple Booking.</h1>
-    <p>Reserve your parking spot in seconds — arrive stress-free.</p>
+    <h1 id="heroTitle">Smart Parking. Simple Booking.</h1>
+    <p id="heroSubtitle">Reserve your parking spot in seconds — arrive stress-free.</p>
     <div class="cta-row">
       <a class="btn" href="map.html">View Parking Map</a>
       <a class="btn outline" href="booking.html">My Booking</a>
     </div>
   </div>
+  <div class="scanline"></div>
 </section>
 
 <main class="container narrow">
   <section class="panel glass">
     <h2>Why Parkway?</h2>
-    <p class="muted">Reduce search time, cut emissions, and improve convenience with live slot data, fast reservations, and IoT‑driven occupancy.</p>
+    <p class="muted">Reduce search time, cut emissions, and improve convenience with live slot data, fast reservations, and IoT-driven occupancy.</p>
   </section>
 </main>
-
+  
 <footer class="site-footer">
-  <small>©️ <span id="year"></span> Parkway • Smart Parking System</small>
+  <small>© <span id="year"></span> Parkway • Smart Parking System</small>
 </footer>
-<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// =============================
+// LIVE DATA BACKEND (Render API)
+// =============================
+const serverURL = "https://parkway-8fji.onrender.com/api/parking";
+
+// Background live data fetcher
+async function fetchLiveData() {
+  try {
+    const res = await fetch(serverURL);
+    if (!res.ok) throw new Error("Failed to fetch slot data");
+
+    const slots = await res.json();  // {A1:"FREE", B2:"OCCUPIED"...}
+
+    // Count data
+    const arr = Object.values(slots).map(v => v.toLowerCase());
+    const total = arr.length;
+    const free = arr.filter(s => s === "free").length;
+    const occupied = arr.filter(s => s === "occupied").length;
+    const reserved = arr.filter(s => s === "reserved").length;
+
+    // OPTIONAL: Lightly update hero text dynamically
+    const title = document.getElementById("heroTitle");
+    const sub = document.getElementById("heroSubtitle");
+
+    if (title && sub) {
+      title.textContent = "Smart Parking. Live Monitoring.";
+      sub.textContent = `${free} free • ${reserved} reserved • ${occupied} occupied`;
+    }
+
+  } catch (err) {
+    console.error("Live data error:", err);
+  }
+}
+
+// Fetch live data every 2 sec like your other pages
+setInterval(fetchLiveData, 2000);
+fetchLiveData();
+</script>
+
 </body>
 </html>
