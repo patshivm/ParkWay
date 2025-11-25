@@ -2,26 +2,30 @@
 <html lang="en">
 <head>
   <title>Parkway • Home</title>
-  
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css"/>
 
-<style>
-  #liveLine {
-    margin-top: 8px;
-    font-size: 1rem;
-    color: rgba(255,255,255,0.8);
-    text-align: center;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css"/>
+
+  <style>
+    /* Live stats line under title */
+    #liveLine {
+      margin-top: 10px;
+      font-size: 1rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.85);
+      text-align: center;
+    }
+  </style>
 </head>
+
 <body>
-  
+
 <header class="topbar">
   <div class="brand"><a href="index.html">🚗 Parkway</a></div>
   <nav class="navlinks">
@@ -36,11 +40,12 @@
 
 <section class="hero full">
   <div class="hero-overlay"></div>
+
   <div class="hero-inner">
 
     <h1>Smart Parking. Live Monitoring.</h1>
 
-    <!-- ⭐ THIS IS THE LIVE TEXT (CENTERED) ⭐ -->
+    <!-- ⭐ LIVE STATS EXACTLY LIKE YOUR SCREENSHOT ⭐ -->
     <p id="liveLine">0 free • 0 reserved • 0 occupied</p>
 
     <div class="cta-row">
@@ -48,16 +53,19 @@
       <a class="btn outline" href="booking.html">My Booking</a>
     </div>
   </div>
+
   <div class="scanline"></div>
 </section>
 
 <main class="container narrow">
   <section class="panel glass">
     <h2>Why Parkway?</h2>
-    <p class="muted">Reduce search time, cut emissions, and improve convenience with live slot data, fast reservations, and IoT-driven occupancy.</p>
+    <p class="muted">
+      Reduce search time, cut emissions, and improve convenience with live slot data, fast reservations, and IoT-driven occupancy.
+    </p>
   </section>
 </main>
-  
+
 <footer class="site-footer">
   <small>© <span id="year"></span> Parkway • Smart Parking System</small>
 </footer>
@@ -65,21 +73,24 @@
 <script>
 document.getElementById('year').textContent = new Date().getFullYear();
 
+// ⭐ Your Render API (live backend)
 const serverURL = "https://parkway-8fji.onrender.com/api/parking";
 const liveLine = document.getElementById("liveLine");
 
-async function updateLiveLine() {
+// ⭐ LIVE UPDATE FUNCTION
+async function updateLiveStatus() {
   try {
     const res = await fetch(serverURL);
-    if (!res.ok) throw new Error("Server error");
+    if (!res.ok) throw new Error("Failed");
 
     const slots = await res.json();
-    const vals = Object.values(slots).map(v => v.toLowerCase());
+    const values = Object.values(slots).map(v => v.toLowerCase());
 
-    const free = vals.filter(v => v === "free").length;
-    const reserved = vals.filter(v => v === "reserved").length;
-    const occupied = vals.filter(v => v === "occupied").length;
+    const free = values.filter(v => v === "free").length;
+    const reserved = values.filter(v => v === "reserved").length;
+    const occupied = values.filter(v => v === "occupied").length;
 
+    // ⭐ EXACTLY like screenshot — nothing else changed
     liveLine.textContent = `${free} free • ${reserved} reserved • ${occupied} occupied`;
 
   } catch (err) {
@@ -87,9 +98,11 @@ async function updateLiveLine() {
   }
 }
 
-setInterval(updateLiveLine, 2000);
-updateLiveLine();
+// ⭐ Refresh every 2 seconds (same as map & dashboard)
+setInterval(updateLiveStatus, 2000);
+updateLiveStatus();
 </script>
 
 </body>
 </html>
+
