@@ -84,3 +84,61 @@ a:hover { text-decoration: underline; }
   .map-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
   .slot { height: 80px; font-size: 0.9rem; }
 }
+/* HERO SECTION FIX — CENTER EVERYTHING */
+.hero {
+  position: relative;
+  width: 100%;
+  height: 420px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero.full {
+  height: 520px;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(2px);
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 5;
+
+  /* THIS CENTERS EVERYTHING PERFECTLY */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+
+  padding: 20px;
+}
+
+#liveLine {
+  margin-top: 10px;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.9);
+}
+
+.cta-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.cta-row .btn {
+  padding: 12px 22px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.btn.outline {
+  border: 2px solid rgba(255,255,255,0.4);
+}
