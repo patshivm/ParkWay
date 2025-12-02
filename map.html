@@ -7,28 +7,41 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{
+  /* unified site palette (matches other pages) */
+  --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
   --asphalt: #2b2b2b;
   --asphalt-dark: #1f1f1f;
-  --slot-border: #ffd700; /* yellow lines */
+  --slot-border: #ffd700;
   --road-width: 120px;
   --hroad-height: 72px;
   --gutter: 22px;
+
+  /* status colors */
+  --free: #24ff6d;
+  --reserved: #ffd056;
+  --occupied: #ff5252;
+  --unknown: #ffd700;
 }
 
 *{box-sizing:border-box;}
+html,body{height:100%;margin:0;padding:0}
 body{
   margin:0;
   font-family:"Poppins",sans-serif;
-  background:var(--asphalt);
   color:#fff;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3)) fixed;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 
 header.topbar{
-  background:#222;
+  background:rgba(0,0,0,0.28);
   padding:.6rem 1.75rem;
   display:flex;
   align-items:center;
   justify-content:space-between;
+  backdrop-filter: blur(6px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
 }
 header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 
@@ -39,16 +52,17 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 }
 
 .panel{
-  background:var(--asphalt-dark);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
   border-radius:10px;
   padding:1rem;
-  box-shadow:0 6px 20px rgba(0,0,0,0.08);
+  box-shadow:0 10px 40px rgba(0,0,0,0.35);
+  border:1px solid rgba(255,255,255,0.04);
 }
 
 .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
 .legend{font-size:0.92rem}
 .legend .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
-.free{background:#4CAF50}.occupied{background:#F44336}.unknown{background:#FFD700}
+.legend .free{background:var(--free)} .legend .reserved{background:var(--reserved)} .legend .occupied{background:var(--occupied)} .legend .unknown{background:var(--unknown)}
 
 .lot-grid{
   display:grid;
@@ -58,14 +72,15 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   position:relative;
   padding:28px;
   border-radius:8px;
-  background: var(--asphalt);
+  background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.12));
+  border:1px solid rgba(255,255,255,0.03);
 }
 
 /* Roads */
 .vertical-road{
   grid-column:2 / 3;
   grid-row:1 / 6;
-  background: var(--asphalt-dark);
+  background: linear-gradient(180deg, var(--asphalt-dark), rgba(0,0,0,0.6));
   border-radius:8px;
   position:relative;
   display:flex;
@@ -83,15 +98,15 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   height:100%;
   background-image: repeating-linear-gradient(
     to bottom,
-    #fff 0 18px,
+    rgba(255,255,255,0.9) 0 18px,
     transparent 18px 36px
   );
-  opacity:0.8;
+  opacity:0.7;
 }
 .hroad{
   grid-column:1 / 4;
   height:var(--hroad-height);
-  background: var(--asphalt-dark);
+  background: linear-gradient(90deg, var(--asphalt-dark), rgba(0,0,0,0.6));
   position:relative;
   border-radius:6px;
   z-index:2;
@@ -106,7 +121,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   width:100%;
   background-image: repeating-linear-gradient(
     to right,
-    #fff 0 24px,
+    rgba(255,255,255,0.9) 0 24px,
     transparent 24px 48px
   );
 }
@@ -127,9 +142,9 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 .slot{
   width:64px;
   height:96px;
-  background:var(--asphalt-dark);
-  border:2px solid var(--slot-border);
-  border-radius:4px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.25));
+  border:2px solid rgba(255,255,255,0.06);
+  border-radius:6px;
   color:#fff;
   font-weight:700;
   display:flex;
@@ -137,17 +152,23 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   justify-content:flex-end;
   position:relative;
   z-index:3;
+  transition: transform .12s ease, box-shadow .12s ease;
+  cursor:pointer;
 }
+.slot:hover{ transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
 .slot-number{
   font-size:.65rem;
   opacity:0.95;
-  padding:2px 4px;
+  padding:6px 8px;
+  border-radius:4px;
+  background:rgba(0,0,0,0.25);
 }
 
-/* Slot Colors (dynamic) */
-.slot.free{border-color:#4CAF50}
-.slot.occupied{border-color:#F44336}
-.slot.unknown{border-color:#FFD700}
+/* Unified slot visuals using status variables */
+.slot.free{ background: linear-gradient(180deg, rgba(36,255,109,0.12), rgba(36,255,109,0.06)); border-color: var(--free); box-shadow: 0 6px 18px rgba(36,255,109,0.06); }
+.slot.reserved{ background: linear-gradient(180deg, rgba(255,208,86,0.12), rgba(255,208,86,0.06)); border-color: var(--reserved); box-shadow: 0 6px 18px rgba(255,208,86,0.06); }
+.slot.occupied{ background: linear-gradient(180deg, rgba(255,82,82,0.12), rgba(255,82,82,0.06)); border-color: var(--occupied); box-shadow: 0 6px 18px rgba(255,82,82,0.06); }
+.slot.unknown{ background: linear-gradient(180deg, rgba(255,215,0,0.10), rgba(255,215,0,0.04)); border-color: var(--unknown); box-shadow: 0 6px 18px rgba(255,215,0,0.05); }
 
 /* Entrance & Exit Labels */
 .entrance, .exit{
@@ -157,8 +178,8 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   font-weight:700;
   z-index:5;
 }
-.entrance{top:-20px; left:50%; transform:translateX(-50%); background:#4CAF50;}
-.exit{bottom:-20px; left:50%; transform:translateX(-50%); background:#F44336;}
+.entrance{top:-20px; left:50%; transform:translateX(-50%); background:var(--free); color:#07121a;}
+.exit{bottom:-20px; left:50%; transform:translateX(-50%); background:var(--occupied); color:#07121a;}
 
 @media (max-width:900px){
   .lot-grid{grid-template-columns: 1fr 96px 1fr; padding:18px}
@@ -183,15 +204,16 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   <section class="panel">
     <div class="panel-head">
       <h2>Live Parking Map</h2>
-      <div class="legend">
+      <div class="legend" aria-hidden="false">
         <span class="dot free"></span> Free
-        <span class="dot occupied"></span> Occupied
-        <span class="dot unknown"></span> Unknown
+        <span style="margin-left:12px" class="dot reserved"></span> Reserved
+        <span style="margin-left:12px" class="dot occupied"></span> Occupied
+        <span style="margin-left:12px" class="dot unknown"></span> Unknown
       </div>
     </div>
 
     <div class="lot-grid" role="region" aria-label="Parking lot map">
-      <div class="vertical-road"></div>
+      <div class="vertical-road" aria-hidden="true"></div>
 
       <!-- Bands: A–D with 5 slots each -->
       <div class="band" style="grid-column:1 / 2; grid-row:1 / 2;">
@@ -234,42 +256,70 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
         </div>
       </div>
 
-      <div class="hroad" style="grid-column:1 / 4; grid-row:2 / 3;"></div>
-      <div class="hroad" style="grid-column:1 / 4; grid-row:4 / 5;"></div>
+      <div class="hroad" style="grid-column:1 / 4; grid-row:2 / 3;" aria-hidden="true"></div>
+      <div class="hroad" style="grid-column:1 / 4; grid-row:4 / 5;" aria-hidden="true"></div>
 
-      <div class="entrance">ENTRANCE</div>
-      <div class="exit">EXIT</div>
+      <div class="entrance" aria-hidden="true">ENTRANCE</div>
+      <div class="exit" aria-hidden="true">EXIT</div>
     </div>
   </section>
 </main>
 
 <script>
+/*
+  Live slot updater
+  - expects backend to return statuses: "FREE", "RESERVED", "OCCUPIED"
+  - maps those to CSS classes: free, reserved, occupied
+  - any unknown value becomes "unknown"
+  - polling interval set to 2000ms to reduce load
+*/
+
+const API_URL = "/api/parking"; // adjust to full URL if needed (e.g., https://yourdomain.com/api/parking)
 let fetching = false;
+
+function normalizeStatus(s) {
+  if (!s && s !== "") return "UNKNOWN";
+  const st = String(s).trim().toUpperCase();
+  if (st === "FREE" || st === "EMPTY") return "FREE"; // accept EMPTY for backward compatibility
+  if (st === "RESERVED") return "RESERVED";
+  if (st === "OCCUPIED") return "OCCUPIED";
+  return "UNKNOWN";
+}
+
 async function fetchSlots() {
-  if(fetching) return;
+  if (fetching) return;
   fetching = true;
   try {
-    const res = await fetch("/api/parking");
-    const data = await res.json();
-    for (const id in data) {
-      const slotEl = document.getElementById(id);
-      if(slotEl){
-        slotEl.classList.remove("free","occupied","unknown");
-        if(data[id] === "EMPTY") slotEl.classList.add("free");
-        else if(data[id] === "OCCUPIED") slotEl.classList.add("occupied");
-        else slotEl.classList.add("unknown");
-      }
+    const res = await fetch(API_URL, { cache: "no-store" });
+    if (!res.ok) {
+      console.error("Failed to fetch slots:", res.status, res.statusText);
+      return;
     }
-  } catch(err) {
-    console.error(err);
+    const data = await res.json();
+    // iterate known slot elements and update classes
+    Object.keys(data || {}).forEach(id => {
+      const slotEl = document.getElementById(id);
+      if (!slotEl) return;
+      const status = normalizeStatus(data[id]);
+      slotEl.classList.remove("free","reserved","occupied","unknown");
+      if (status === "FREE") slotEl.classList.add("free");
+      else if (status === "RESERVED") slotEl.classList.add("reserved");
+      else if (status === "OCCUPIED") slotEl.classList.add("occupied");
+      else slotEl.classList.add("unknown");
+    });
+  } catch (err) {
+    console.error("Error fetching slots:", err);
   } finally {
     fetching = false;
   }
 }
 
-// Update every 500ms
-setInterval(fetchSlots, 500);
-fetchSlots();
+// start after DOM loaded
+document.addEventListener("DOMContentLoaded", () => {
+  fetchSlots();
+  setInterval(fetchSlots, 2000); // live update every 2 seconds
+});
 </script>
 </body>
 </html>
+
