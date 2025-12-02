@@ -1,11 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Parkway • Contact</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parkway • Contact</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css"/>
+  
+  <style>
+    /* Contact Page Enhancements */
+    .panel.center {
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 2rem;
+      text-align: center;
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(10px);
+    }
+
+    .panel.center h2 {
+      margin-bottom: 0.5rem;
+      font-size: 1.8rem;
+      color: #fff;
+    }
+
+    .panel.center p {
+      margin-bottom: 1rem;
+      color: #ccc;
+      font-size: 1rem;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      background: #4CAF50;
+      color: #fff;
+      font-weight: 600;
+      border-radius: 6px;
+      text-decoration: none;
+      margin-bottom: 1rem;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      background: #45a049;
+    }
+
+    .contact-form {
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top:1rem;
+    }
+
+    .contact-form input,
+    .contact-form textarea {
+      padding:10px;
+      border-radius:6px;
+      border:1px solid #ccc;
+      font-family:"Poppins",sans-serif;
+      font-size:0.9rem;
+      background: rgba(255,255,255,0.05);
+      color: #fff;
+      resize: none;
+      transition: 0.3s;
+    }
+
+    .contact-form input:focus,
+    .contact-form textarea:focus {
+      border-color: #4CAF50;
+      outline: none;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .contact-form input::placeholder,
+    .contact-form textarea::placeholder {
+      color: #ccc;
+    }
+
+    .contact-form button {
+      background:#4CAF50;
+      color:#fff;
+      border:none;
+      cursor:pointer;
+      padding:10px;
+      font-weight:600;
+      border-radius:6px;
+      transition:0.2s;
+    }
+
+    .contact-form button:hover {
+      background:#45a049;
+    }
+
+    .social-links {
+      margin-top:1.5rem;
+      color:#ccc;
+    }
+
+    .social-links a {
+      color:#70afbb;
+      text-decoration:none;
+      margin:0 6px;
+    }
+
+    .social-links a:hover {
+      text-decoration:underline;
+    }
+
+    /* Info Cards */
+    .info-cards {
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      margin-top:1.5rem;
+    }
+
+    .info-card {
+      display:flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:12px;
+      padding:12px 16px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      transition: transform 0.3s, background 0.3s;
+      cursor: pointer;
+    }
+
+    .info-card:hover {
+      transform: translateY(-4px);
+      background: rgba(76,175,80,0.1);
+    }
+
+    .info-card span.icon {
+      font-size: 1.5rem;
+      color: #4CAF50;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .info-card div.text {
+      color: #fff;
+      font-size: 0.95rem;
+      text-align: left;
+    }
+
+    @media (max-width:600px){
+      .info-cards {
+        gap:10px;
+      }
+    }
+  </style>
 </head>
 <body>
 <header class="topbar">
@@ -24,19 +173,50 @@
   <section class="panel glass center">
     <h2>Contact</h2>
     <p>Questions or collaboration? Reach out to us.</p>
-
+    
+   
+    
+    <!-- Contact Form -->
     <form class="contact-form" action="mailto:parkwayproject2025@gmail.com" method="POST" enctype="text/plain">
       <input type="text" name="name" placeholder="Your Name" required />
       <input type="email" name="email" placeholder="Your Email" required />
       <textarea name="message" rows="4" placeholder="Your Message..." required></textarea>
       <button type="submit">Send Message</button>
     </form>
+
+    <!-- Info Cards -->
+    <div class="info-cards">
+      <div class="info-card">
+        <span class="icon">📍</span>
+        <div class="text">Sheridan College, Mississauga, Canada</div>
+      </div>
+      <div class="info-card">
+        <span class="icon">📧</span>
+        <div class="text">parkwayproject2025@gmail.com</div>
+      </div>
+      <div class="info-card">
+        <span class="icon">📞</span>
+        <div class="text">+1 123-456-7890</div>
+      </div>
+    </div>
+
+    <!-- Social Links -->
+    <div class="social-links">
+      <p>Connect with us:</p>
+      <a href="https://twitter.com/" target="_blank">Twitter</a> • 
+      <a href="https://linkedin.com/" target="_blank">LinkedIn</a> • 
+      <a href="https://github.com/" target="_blank">GitHub</a>
+    </div>
+
   </section>
 </main>
 
 <footer class="site-footer">
-  <small>©️ <span id="year"></span> Parkway • Smart Parking System</small>
+  <small>© <span id="year"></span> Parkway • Smart Parking System</small>
 </footer>
-<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
 </body>
 </html>
