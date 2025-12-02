@@ -1,111 +1,209 @@
-const serverURL = "https://parkway-8fji.onrender.com/api/parking";
+// app.js - unified frontend logic for MAP, BOOKING, DASHBOARD
+
+/* ===== CONFIG ===== */
+const API_URL = "https://parkway-8fji.onrender.com/api/parking"; // change if needed
+const AUTH_TOKEN = ""; // optional: set if your server requires a token
+const POLL_INTERVAL = 2000; // ms
 
 /* ===== LOCAL BOOKING SAVE/LOAD ===== */
 function setMyBooking(slotId) { localStorage.setItem('mySlot', slotId || ''); }
 function getMyBooking() { return localStorage.getItem('mySlot') || ''; }
 
-/* ===== MAP PAGE RENDERING ===== */
+/* ===== UI HELPERS ===== */
+function setSlotUI(slotEl, status) {
+  if (!slotEl) return;
+  slotEl.classList.remove("free", "reserved", "occupied");
+  const s = String(status || "").toUpperCase();
+  if (s === "FREE") slotEl.classList.add("free");
+  else if (s === "RESERVED") slotEl.classList.add("reserved");
+  else if (s === "OCCUPIED") slotEl.classList.add("occupied");
+  // status label inside slot
+  let statusEl = slotEl.querySelector(".slot-status");
+  if (!statusEl) {
+    statusEl = document.createElement("div");
+    statusEl.className = "slot-status";
+    statusEl.style.position = "absolute";
+    statusEl.style.left = "6px";
+    statusEl.style.top = "6px";
+    statusEl.style.fontSize = "11px";
+    statusEl.style.fontWeight = "700";
+    statusEl.style.color = "#07121a";
+    statusEl.style.padding = "2px 6px";
+    statusEl.style.borderRadius = "6px";
+    statusEl.style.pointerEvents = "none";
+    slotEl.appendChild(statusEl);
+  }
+  if (s === "FREE") {
+    statusEl.textContent = "";
+    statusEl.style.background = "transparent";
+    statusEl.style.color = "#fff";
+  } else if (s === "RESERVED") {
+    statusEl.textContent = "RESERVED";
+    statusEl.style.background = "var(--reserved, #ffd056)";
+    statusEl.style.color = "#07121a";
+  } else if (s === "OCCUPIED") {
+    statusEl.textContent = "OCCUPIED";
+    statusEl.style.background = "var(--occupied, #ff5252)";
+    statusEl.style.color = "#07121a";
+  } else {
+    statusEl.textContent = "";
+    statusEl.style.background = "transparent";
+  }
+}
+
+/* ===== MAP: fetch & render ===== */
 async function renderMap() {
   try {
-    const res = await fetch(serverURL);
+    const res = await fetch(API_URL, { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to fetch slot data");
-    const slots = await res.json(); // expects {A1:"FREE",B2:"OCCUPIED",...}
+    const slots = await res.json(); // expects {A1:"FREE", B2:"OCCUPIED", ...}
 
     Object.keys(slots).forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      const status = slots[id].toLowerCase();
-      el.className = `slot ${status}`;
-      el.innerHTML = `<span>${id}</span><span class="slot-id">${status.toUpperCase()}</span>`;
-      el.onclick = () => onSlotClick(id, status);
+      const status = String(slots[id] || "").toUpperCase();
+      // treat EMPTY as FREE for compatibility
+      const normalized = (status === "EMPTY") ? "FREE" : status;
+      setSlotUI(el, normalized);
+
+      // attach click handler for immediate reservation (optimistic)
+      el.onclick = () => onSlotClickImmediate(id);
     });
+
+    // highlight user's reserved slot on map (if any)
+    const my = getMyBooking();
+    if (my) {
+      const myEl = document.getElementById(my);
+      if (myEl) {
+        myEl.style.outline = "3px solid rgba(99,197,255,0.18)";
+        myEl.style.outlineOffset = "4px";
+      }
+    }
   } catch (e) {
-    console.error("Error fetching slot data:", e);
+    console.error("renderMap error:", e);
   }
 }
 
-let selectedSlot = null;
-let action = null;
+/* ===== IMMEDIATE RESERVE CLICK HANDLER ===== */
+async function onSlotClickImmediate(slotId) {
+  const slotEl = document.getElementById(slotId);
+  if (!slotEl) return;
+  // ignore if occupied or already reserved by someone else in UI
+  if (slotEl.classList.contains("occupied") || slotEl.classList.contains("reserved")) return;
 
-function onSlotClick(id, status) {
-  if (status === 'occupied') return;
-  selectedSlot = id;
-  action = status === 'free' ? 'reserve' : 'release';
+  // optimistic UI: mark reserved immediately
+  setSlotUI(slotEl, "RESERVED");
+  setMyBooking(slotId);
 
-  const modalSlot = document.getElementById('modalSlot');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalText = document.getElementById('modalText');
+  // prepare payload
+  const body = { status: "RESERVED" };
+  if (AUTH_TOKEN) body.token = AUTH_TOKEN;
 
-  if (modalSlot) modalSlot.textContent = id;
-  if (modalTitle) modalTitle.textContent = action === 'reserve' ? 'Reserve Slot' : 'Release Slot';
-  if (modalText) modalText.innerHTML = action === 'reserve'
-    ? `Confirm reservation for <strong>${id}</strong>?`
-    : `Release reservation for <strong>${id}</strong>?`;
-
-  showModal();
-}
-
-function showModal() { const m = document.getElementById('modal'); if (m) m.classList.remove('hidden'); }
-function hideModal() { const m = document.getElementById('modal'); if (m) m.classList.add('hidden'); }
-function attachModalHandlers() {
-  const cancelBtn = document.getElementById('cancelBtn');
-  const confirmBtn = document.getElementById('confirmBtn');
-  const modal = document.getElementById('modal');
-
-  if (cancelBtn) cancelBtn.onclick = hideModal;
-  if (confirmBtn) confirmBtn.onclick = async () => {
-    if (!selectedSlot) return;
-    const newStatus = action === 'reserve' ? 'reserved' : 'free';
-    try {
-      await fetch(`${serverURL}/${selectedSlot}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-      setMyBooking(newStatus === 'reserved' ? selectedSlot : '');
-      hideModal();
-    } catch (e) {
-      console.error("Failed to update slot status:", e);
+  try {
+    const res = await fetch(`${API_URL}/${slotId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      // revert UI on failure
+      console.error("Reserve failed:", res.status, await res.text());
+      setSlotUI(slotEl, "FREE");
+      setMyBooking('');
+      alert("Failed to reserve slot. Please try again.");
+      return;
     }
-  };
-  if (modal) modal.addEventListener('click', e => { if (e.target.id === 'modal') hideModal(); });
+    // success: keep reserved; map polling and ESP32 will pick up change
+  } catch (err) {
+    console.error("Network error while reserving:", err);
+    setSlotUI(slotEl, "FREE");
+    setMyBooking('');
+    alert("Network error. Try again.");
+  }
 }
 
 /* ===== BOOKING PAGE ===== */
 async function renderBooking() {
   const info = document.getElementById('bookingInfo');
-  const my = getMyBooking();
-  if (info) info.textContent = my ? `Active booking: ${my} (Reserved)` : 'No active booking.';
-
   const releaseBtn = document.getElementById('releaseBtn');
-  if (releaseBtn) releaseBtn.onclick = async () => {
-    const id = getMyBooking();
-    if (!id) return;
-    try {
-      await fetch(`${serverURL}/${id}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'free' })
-      });
+  const mySlot = getMyBooking();
+
+  if (releaseBtn) {
+    releaseBtn.disabled = false;
+    releaseBtn.style.display = 'none';
+  }
+
+  if (!mySlot) {
+    if (info) info.textContent = 'No active booking.';
+    return;
+  }
+
+  if (info) info.textContent = `Active booking: ${mySlot} (checking...)`;
+  if (releaseBtn) releaseBtn.style.display = 'inline-block';
+
+  try {
+    const res = await fetch(API_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('Failed to fetch slot data');
+    const slots = await res.json();
+    const serverStatus = String(slots[mySlot] || '').toUpperCase();
+
+    if (serverStatus === 'RESERVED') {
+      if (info) info.textContent = `Active booking: ${mySlot} (RESERVED)`;
+    } else {
+      // server no longer reserved -> clear local booking
       setMyBooking('');
       if (info) info.textContent = 'No active booking.';
-    } catch (e) {
-      console.error("Failed to release booking:", e);
+      if (releaseBtn) releaseBtn.style.display = 'none';
     }
-  };
+  } catch (err) {
+    console.error('renderBooking error:', err);
+    if (info) info.textContent = `Active booking: ${mySlot} (offline)`;
+  }
+
+  // attach release handler once
+  if (releaseBtn && !releaseBtn._attached) {
+    releaseBtn._attached = true;
+    releaseBtn.addEventListener('click', async () => {
+      const id = getMyBooking();
+      if (!id) return;
+      releaseBtn.disabled = true;
+      releaseBtn.textContent = 'Releasing...';
+      try {
+        const body = { status: 'FREE' };
+        if (AUTH_TOKEN) body.token = AUTH_TOKEN;
+        const resp = await fetch(`${API_URL}/${id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        if (!resp.ok) throw new Error('Release failed');
+        setMyBooking('');
+        if (info) info.textContent = 'No active booking.';
+        releaseBtn.style.display = 'none';
+        // refresh map to reflect change
+        renderMap();
+      } catch (e) {
+        console.error('Failed to release booking:', e);
+        alert('Failed to release booking. Try again.');
+      } finally {
+        releaseBtn.disabled = false;
+        releaseBtn.textContent = 'Release My Slot';
+      }
+    });
+  }
 }
 
-/* ===== DASHBOARD PAGE ===== */
+/* ===== DASHBOARD ===== */
 async function renderStats() {
   try {
-    const res = await fetch(serverURL);
+    const res = await fetch(API_URL, { cache: "no-store" });
     if (!res.ok) throw new Error("Failed to fetch slot data");
     const slots = await res.json();
-    const vals = Object.values(slots || {});
+    const vals = Object.values(slots || {}).map(s => String(s || "").toUpperCase().replace("EMPTY", "FREE"));
     const total = vals.length;
-    const free = vals.filter(s => s.toLowerCase() === 'free').length;
-    const reserved = vals.filter(s => s.toLowerCase() === 'reserved').length;
-    const occupied = vals.filter(s => s.toLowerCase() === 'occupied').length;
+    const free = vals.filter(s => s === 'FREE').length;
+    const reserved = vals.filter(s => s === 'RESERVED').length;
+    const occupied = vals.filter(s => s === 'OCCUPIED').length;
 
     const el = id => document.getElementById(id);
     if (el('statTotal')) el('statTotal').textContent = total;
@@ -115,7 +213,7 @@ async function renderStats() {
 
     drawChart(free, reserved, occupied);
   } catch (e) {
-    console.error("Error fetching stats:", e);
+    console.error("renderStats error:", e);
   }
 }
 
@@ -149,19 +247,24 @@ function drawChart(free, reserved, occupied) {
   });
 }
 
-/* ===== INIT ===== */
-(function init() {
+/* ===== INIT (wait for DOM so window.PAGE is set in HTML) ===== */
+document.addEventListener('DOMContentLoaded', () => {
   const page = window.PAGE || 'HOME';
+
   if (page === 'MAP') {
     renderMap();
-    attachModalHandlers();
-    setInterval(renderMap, 2000); // live update every 2 sec
+    // poll map
+    setInterval(renderMap, POLL_INTERVAL);
   }
+
   if (page === 'BOOKING') {
     renderBooking();
+    setInterval(renderBooking, POLL_INTERVAL);
   }
+
   if (page === 'DASHBOARD') {
     renderStats();
-    setInterval(renderStats, 2000); // live update
+    setInterval(renderStats, POLL_INTERVAL);
   }
-})();
+});
+
