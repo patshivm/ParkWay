@@ -14,9 +14,9 @@ async function renderMap() {
     Object.keys(slots).forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      const status = slots[id].toUpperCase(); // normalize to uppercase
-      el.className = `slot ${status.toLowerCase()}`;
-      el.innerHTML = `<span>${id}</span><span class="slot-id">${status}</span>`;
+      const status = slots[id].toLowerCase();
+      el.className = `slot ${status}`;
+      el.innerHTML = `<span>${id}</span><span class="slot-id">${status.toUpperCase()}</span>`;
       el.onclick = () => onSlotClick(id, status);
     });
   } catch (e) {
@@ -28,9 +28,9 @@ let selectedSlot = null;
 let action = null;
 
 function onSlotClick(id, status) {
-  if (status === 'OCCUPIED') return; // cannot click occupied
+  if (status === 'occupied') return;
   selectedSlot = id;
-  action = status === 'FREE' ? 'reserve' : 'release';
+  action = status === 'free' ? 'reserve' : 'release';
 
   const modalSlot = document.getElementById('modalSlot');
   const modalTitle = document.getElementById('modalTitle');
@@ -55,16 +55,15 @@ function attachModalHandlers() {
   if (cancelBtn) cancelBtn.onclick = hideModal;
   if (confirmBtn) confirmBtn.onclick = async () => {
     if (!selectedSlot) return;
-    const newStatus = action === 'reserve' ? 'RESERVED' : 'FREE';
+    const newStatus = action === 'reserve' ? 'reserved' : 'free';
     try {
       await fetch(`${serverURL}/${selectedSlot}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
       });
-      setMyBooking(newStatus === 'RESERVED' ? selectedSlot : '');
+      setMyBooking(newStatus === 'reserved' ? selectedSlot : '');
       hideModal();
-      renderMap(); // refresh immediately
     } catch (e) {
       console.error("Failed to update slot status:", e);
     }
@@ -76,7 +75,7 @@ function attachModalHandlers() {
 async function renderBooking() {
   const info = document.getElementById('bookingInfo');
   const my = getMyBooking();
-  if (info) info.textContent = my ? `Active booking: ${my} (RESERVED)` : 'No active booking.';
+  if (info) info.textContent = my ? `Active booking: ${my} (Reserved)` : 'No active booking.';
 
   const releaseBtn = document.getElementById('releaseBtn');
   if (releaseBtn) releaseBtn.onclick = async () => {
@@ -86,11 +85,10 @@ async function renderBooking() {
       await fetch(`${serverURL}/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'FREE' })
+        body: JSON.stringify({ status: 'free' })
       });
       setMyBooking('');
       if (info) info.textContent = 'No active booking.';
-      renderMap(); // refresh map if visible
     } catch (e) {
       console.error("Failed to release booking:", e);
     }
@@ -103,11 +101,11 @@ async function renderStats() {
     const res = await fetch(serverURL);
     if (!res.ok) throw new Error("Failed to fetch slot data");
     const slots = await res.json();
-    const vals = Object.values(slots || {}).map(s => s.toUpperCase());
+    const vals = Object.values(slots || {});
     const total = vals.length;
-    const free = vals.filter(s => s === 'FREE').length;
-    const reserved = vals.filter(s => s === 'RESERVED').length;
-    const occupied = vals.filter(s => s === 'OCCUPIED').length;
+    const free = vals.filter(s => s.toLowerCase() === 'free').length;
+    const reserved = vals.filter(s => s.toLowerCase() === 'reserved').length;
+    const occupied = vals.filter(s => s.toLowerCase() === 'occupied').length;
 
     const el = id => document.getElementById(id);
     if (el('statTotal')) el('statTotal').textContent = total;
