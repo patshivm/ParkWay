@@ -7,14 +7,15 @@ const path = require("path");
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Enable CORS for testing from different origins
 app.use(cors());
 app.use(bodyParser.json());
+
+// Serve static website pages
 app.use(express.static(path.join(__dirname)));
 
-/* =====================================================
-   EXACT 20 SLOTS (A1–A5, B1–B5, C1–C5, D1–D5)
-   DEFAULT STATUS = "free"
-===================================================== */
+// In-memory parking slot data
+// Initialize all slots to EMPTY
 let slots = {
   A1:"free", A2:"free", A3:"free", A4:"free", A5:"free",
   B1:"free", B2:"free", B3:"free", B4:"free", B5:"free",
@@ -22,81 +23,29 @@ let slots = {
   D1:"free", D2:"free", D3:"free", D4:"free", D5:"free"
 };
 
-// Allowed status values
-const allowedStatuses = ["free", "reserved", "occupied"];
-
-
-/* =====================================================
-   UPDATE SLOT STATUS VIA POST  
-   BODY: { slotId: "A3", status: "reserved" }
-===================================================== */
+// API endpoint for ESP32 devices to update a slot
 app.post("/api/parking", (req, res) => {
   const { slotId, status } = req.body;
 
   if (!slotId || !status) {
-    return res.status(400).json({ error: "slotId and status required" });
+    return res.status(400).json({ error: "slotId and status are required" });
   }
 
   if (!slots.hasOwnProperty(slotId)) {
-    return res.status(400).json({ error: `Invalid slotId: ${slotId}` });
+    return res.status(400).json({ error: "Invalid slotId" });
   }
 
-  const norm = status.toLowerCase();
-  if (!allowedStatuses.includes(norm)) {
-    return res.status(400).json({ error: "Invalid status value" });
-  }
-
-  slots[slotId] = norm;
-  console.log(`Updated → ${slotId} = ${norm}`);
-  res.json({ ok: true, slot: slotId, status: norm });
+  slots[slotId] = status.toUpperCase(); // store as "EMPTY" or "OCCUPIED"
+  console.log(`Updated ${slotId} → ${slots[slotId]}`);
+  res.json({ message: `Slot ${slotId} updated to ${status}` });
 });
 
-
-/* =====================================================
-   UPDATE INDIVIDUAL SLOT (EX: /api/parking/A4)
-===================================================== */
-app.post("/api/parking/:slotId", (req, res) => {
-  const { slotId } = req.params;
-  const { status } = req.body;
-
-  if (!status) return res.status(400).json({ error: "status required" });
-  if (!slots.hasOwnProperty(slotId)) {
-    return res.status(400).json({ error: `Invalid slotId: ${slotId}` });
-  }
-
-  const norm = status.toLowerCase();
-  if (!allowedStatuses.includes(norm)) {
-    return res.status(400).json({ error: "Invalid status value" });
-  }
-
-  slots[slotId] = norm;
-
-  console.log(`Updated → ${slotId} = ${norm}`);
-  res.json({ ok: true, slot: slotId, status: norm });
-});
-
-
-/* =====================================================
-   GET ALL SLOT STATUS
-===================================================== */
+// API endpoint to get all slot statuses
 app.get("/api/parking", (req, res) => {
   res.json(slots);
 });
 
-
-/* =====================================================
-   RESET ALL SLOTS TO FREE
-===================================================== */
-app.get("/api/reset", (req, res) => {
-  Object.keys(slots).forEach(k => slots[k] = "free");
-  console.log("RESET → All 20 slots set to FREE");
-  res.json({ ok: true, message: "All slots reset to free" });
-});
-
-
-/* =====================================================
-   START SERVER
-===================================================== */
+// Start server
 app.listen(PORT, () => {
-  console.log(`🚗 Parkway Server Running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });
