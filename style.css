@@ -28,7 +28,9 @@ a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
 .btn.outline{background:transparent;color:var(--text);border:1px solid var(--stroke)}
 
 .scanline{position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg, rgba(99,197,255,0), rgba(99,197,255,1), rgba(99,197,255,0));box-shadow:0 0 24px rgba(99,197,255,.9);animation:scan 6s linear infinite}
-@keyframes scan{0%{transform:translateX(-30%)}100%{transform:translateX(30%)}}
+@keyframes scan{0%{transform:translateX(-30%)}100%{transform:translateX(30%)}
+
+}
 
 .container{max-width:1100px;margin:24px auto;padding:0 16px}
 .narrow{max-width:880px}
@@ -71,6 +73,7 @@ a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
   .hero h1{font-size:42px}
   .lot-grid{grid-template-columns: 28px repeat(2, 1fr)}
 }
+
 /* ========== PARKING MAP LAYOUT ========== */
 .lot-container {
   text-align: center;
@@ -115,6 +118,7 @@ a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
   width: 550px;
 }
 
+/* Slot card */
 .slot {
   width: 80px;
   height: 140px;
@@ -130,7 +134,10 @@ a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
   transform: scale(1.05);
 }
 
-
+/* Unified slot colors via variables */
+.slot.free { background: var(--free); border-color: var(--free); }
+.slot.reserved { background: var(--reserved); border-color: var(--reserved); }
+.slot.occupied { background: var(--occupied); border-color: var(--occupied); }
 
 /* ROAD SECTION */
 .road {
@@ -186,16 +193,8 @@ a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
   position: absolute;
 }
 
-.entry {
-  top: 10px;
-  left: 15px;
-}
-
-.exit {
-  bottom: 10px;
-  right: 15px;
-  background: #4caf50;
-}
+.entry { top: 10px; left: 15px; }
+.exit { bottom: 10px; right: 15px; background: #4caf50; }
 
 /* LEGEND */
 .legend {
@@ -206,14 +205,9 @@ a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
   font-weight: 500;
 }
 
-.dot {
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  display: inline-block;
-}
+.dot { width: 15px; height: 15px; border-radius: 50%; display: inline-block; }
+.dot.free { background: var(--free); }
+.dot.reserved { background: var(--reserved); }
+.dot.occupied { background: var(--occupied); }
 
-.dot.free { background: #4caf50; }
-.dot.reserved { background: #ffc107; }
-.dot.occupied { background: #f44336; }
 
