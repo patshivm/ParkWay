@@ -130,10 +130,7 @@ a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
   transform: scale(1.05);
 }
 
-/* Slot colors based on status */
-.slot.free { background: #b5f7b5; border-color: #76c776; }
-.slot.reserved { background: #ffe48b; border-color: #d2a500; }
-.slot.occupied { background: #ff9e9e; border-color: #d46b6b; }
+
 
 /* ROAD SECTION */
 .road {
