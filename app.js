@@ -1,5 +1,4 @@
 // app.js - unified frontend logic for MAP, BOOKING, DASHBOARD
-
 /* ===== CONFIG ===== */
 const API_URL = "https://parkway-8fji.onrender.com/api/parking"; // change if needed
 const AUTH_TOKEN = ""; // optional: set if your server requires a token
@@ -17,6 +16,7 @@ function setSlotUI(slotEl, status) {
   if (s === "FREE") slotEl.classList.add("free");
   else if (s === "RESERVED") slotEl.classList.add("reserved");
   else if (s === "OCCUPIED") slotEl.classList.add("occupied");
+
   // status label inside slot
   let statusEl = slotEl.querySelector(".slot-status");
   if (!statusEl) {
@@ -27,12 +27,12 @@ function setSlotUI(slotEl, status) {
     statusEl.style.top = "6px";
     statusEl.style.fontSize = "11px";
     statusEl.style.fontWeight = "700";
-    statusEl.style.color = "#07121a";
     statusEl.style.padding = "2px 6px";
     statusEl.style.borderRadius = "6px";
     statusEl.style.pointerEvents = "none";
     slotEl.appendChild(statusEl);
   }
+
   if (s === "FREE") {
     statusEl.textContent = "";
     statusEl.style.background = "transparent";
@@ -51,36 +51,57 @@ function setSlotUI(slotEl, status) {
   }
 }
 
+/* ===== NORMALIZE ===== */
+function normalizeStatus(raw) {
+  const s = String(raw || "").trim().toUpperCase();
+  if (s === "EMPTY") return "FREE";
+  if (s === "FREE" || s === "RESERVED" || s === "OCCUPIED") return s;
+  return "FREE";
+}
+
 /* ===== MAP: fetch & render ===== */
 async function renderMap() {
   try {
+    console.log("[renderMap] fetching", API_URL);
     const res = await fetch(API_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error("Failed to fetch slot data");
-    const slots = await res.json(); // expects {A1:"FREE", B2:"OCCUPIED", ...}
+    if (!res.ok) {
+      console.warn("[renderMap] GET failed", res.status, res.statusText);
+      return;
+    }
+    const slots = await res.json();
+    console.log("[renderMap] received", slots);
+
+    const myLocal = getMyBooking();
 
     Object.keys(slots).forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      const status = String(slots[id] || "").toUpperCase();
-      // treat EMPTY as FREE for compatibility
-      const normalized = (status === "EMPTY") ? "FREE" : status;
-      setSlotUI(el, normalized);
+      const normalized = normalizeStatus(slots[id]);
+      // If user has locally reserved this slot, keep it reserved until server shows otherwise
+      if (myLocal && myLocal === id && normalized !== "RESERVED") {
+        // keep optimistic reserved look
+        setSlotUI(el, "RESERVED");
+      } else {
+        setSlotUI(el, normalized);
+      }
 
       // attach click handler for immediate reservation (optimistic)
-      el.onclick = () => onSlotClickImmediate(id);
+      if (!el._clickAttached) {
+        el._clickAttached = true;
+        el.addEventListener("click", () => onSlotClickImmediate(id));
+      }
     });
 
     // highlight user's reserved slot on map (if any)
-    const my = getMyBooking();
-    if (my) {
-      const myEl = document.getElementById(my);
+    if (myLocal) {
+      const myEl = document.getElementById(myLocal);
       if (myEl) {
         myEl.style.outline = "3px solid rgba(99,197,255,0.18)";
         myEl.style.outlineOffset = "4px";
       }
     }
   } catch (e) {
-    console.error("renderMap error:", e);
+    console.error("[renderMap] error:", e);
   }
 }
 
@@ -88,10 +109,15 @@ async function renderMap() {
 async function onSlotClickImmediate(slotId) {
   const slotEl = document.getElementById(slotId);
   if (!slotEl) return;
-  // ignore if occupied or already reserved by someone else in UI
-  if (slotEl.classList.contains("occupied") || slotEl.classList.contains("reserved")) return;
+
+  // ignore if occupied or already reserved in UI
+  if (slotEl.classList.contains("occupied") || slotEl.classList.contains("reserved")) {
+    console.log("[onSlotClickImmediate] ignored click, already occupied/reserved:", slotId);
+    return;
+  }
 
   // optimistic UI: mark reserved immediately
+  console.log("[onSlotClickImmediate] optimistic reserve", slotId);
   setSlotUI(slotEl, "RESERVED");
   setMyBooking(slotId);
 
@@ -100,22 +126,31 @@ async function onSlotClickImmediate(slotId) {
   if (AUTH_TOKEN) body.token = AUTH_TOKEN;
 
   try {
+    console.log("[onSlotClickImmediate] POST", `${API_URL}/${slotId}`, body);
     const res = await fetch(`${API_URL}/${slotId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
     });
+
+    const text = await res.text();
+    console.log("[onSlotClickImmediate] POST response", res.status, text);
+
     if (!res.ok) {
       // revert UI on failure
-      console.error("Reserve failed:", res.status, await res.text());
+      console.error("[onSlotClickImmediate] Reserve failed:", res.status, text);
       setSlotUI(slotEl, "FREE");
       setMyBooking('');
       alert("Failed to reserve slot. Please try again.");
       return;
     }
-    // success: keep reserved; map polling and ESP32 will pick up change
+
+    // success: re-fetch to sync authoritative state
+    setTimeout(() => {
+      renderMap();
+    }, 300);
   } catch (err) {
-    console.error("Network error while reserving:", err);
+    console.error("[onSlotClickImmediate] Network error while reserving:", err);
     setSlotUI(slotEl, "FREE");
     setMyBooking('');
     alert("Network error. Try again.");
@@ -156,7 +191,7 @@ async function renderBooking() {
       if (releaseBtn) releaseBtn.style.display = 'none';
     }
   } catch (err) {
-    console.error('renderBooking error:', err);
+    console.error('[renderBooking] error:', err);
     if (info) info.textContent = `Active booking: ${mySlot} (offline)`;
   }
 
@@ -171,11 +206,14 @@ async function renderBooking() {
       try {
         const body = { status: 'FREE' };
         if (AUTH_TOKEN) body.token = AUTH_TOKEN;
+        console.log('[renderBooking] releasing', id);
         const resp = await fetch(`${API_URL}/${id}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body)
         });
+        const txt = await resp.text();
+        console.log('[renderBooking] release response', resp.status, txt);
         if (!resp.ok) throw new Error('Release failed');
         setMyBooking('');
         if (info) info.textContent = 'No active booking.';
@@ -183,7 +221,7 @@ async function renderBooking() {
         // refresh map to reflect change
         renderMap();
       } catch (e) {
-        console.error('Failed to release booking:', e);
+        console.error('[renderBooking] Failed to release booking:', e);
         alert('Failed to release booking. Try again.');
       } finally {
         releaseBtn.disabled = false;
@@ -213,7 +251,7 @@ async function renderStats() {
 
     drawChart(free, reserved, occupied);
   } catch (e) {
-    console.error("renderStats error:", e);
+    console.error("[renderStats] error:", e);
   }
 }
 
@@ -267,4 +305,5 @@ document.addEventListener('DOMContentLoaded', () => {
     setInterval(renderStats, POLL_INTERVAL);
   }
 });
+
 
