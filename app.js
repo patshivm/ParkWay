@@ -9,14 +9,23 @@ async function renderMap() {
   try {
     const res = await fetch(serverURL);
     if (!res.ok) throw new Error("Failed to fetch slot data");
-    const slots = await res.json(); // expects {A1:"FREE",B2:"OCCUPIED",...}
+    const slots = await res.json();
 
     Object.keys(slots).forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      const status = slots[id].toLowerCase();
+
+      let status = slots[id]?.toLowerCase() || "free";
+
+      // Apply color class
       el.className = `slot ${status}`;
-      el.innerHTML = `<span>${id}</span><span class="slot-id">${status.toUpperCase()}</span>`;
+
+      // New layout inside slot
+      el.innerHTML = `
+        <div class="slot-label">${id}</div>
+        <div class="slot-status">${status.toUpperCase()}</div>
+      `;
+
       el.onclick = () => onSlotClick(id, status);
     });
   } catch (e) {
@@ -24,52 +33,6 @@ async function renderMap() {
   }
 }
 
-let selectedSlot = null;
-let action = null;
-
-function onSlotClick(id, status) {
-  if (status === 'occupied') return;
-  selectedSlot = id;
-  action = status === 'free' ? 'reserve' : 'release';
-
-  const modalSlot = document.getElementById('modalSlot');
-  const modalTitle = document.getElementById('modalTitle');
-  const modalText = document.getElementById('modalText');
-
-  if (modalSlot) modalSlot.textContent = id;
-  if (modalTitle) modalTitle.textContent = action === 'reserve' ? 'Reserve Slot' : 'Release Slot';
-  if (modalText) modalText.innerHTML = action === 'reserve'
-    ? `Confirm reservation for <strong>${id}</strong>?`
-    : `Release reservation for <strong>${id}</strong>?`;
-
-  showModal();
-}
-
-function showModal() { const m = document.getElementById('modal'); if (m) m.classList.remove('hidden'); }
-function hideModal() { const m = document.getElementById('modal'); if (m) m.classList.add('hidden'); }
-function attachModalHandlers() {
-  const cancelBtn = document.getElementById('cancelBtn');
-  const confirmBtn = document.getElementById('confirmBtn');
-  const modal = document.getElementById('modal');
-
-  if (cancelBtn) cancelBtn.onclick = hideModal;
-  if (confirmBtn) confirmBtn.onclick = async () => {
-    if (!selectedSlot) return;
-    const newStatus = action === 'reserve' ? 'reserved' : 'free';
-    try {
-      await fetch(`${serverURL}/${selectedSlot}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
-      });
-      setMyBooking(newStatus === 'reserved' ? selectedSlot : '');
-      hideModal();
-    } catch (e) {
-      console.error("Failed to update slot status:", e);
-    }
-  };
-  if (modal) modal.addEventListener('click', e => { if (e.target.id === 'modal') hideModal(); });
-}
 
 /* ===== BOOKING PAGE ===== */
 async function renderBooking() {
