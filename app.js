@@ -1,5 +1,17 @@
 const serverURL = "https://parkway-8fji.onrender.com/api/parking";
 
+/* ===== HELPERS: STATE NORMALIZATION =====
+   Backend: "EMPTY", "OCCUPIED", "RESERVED"
+   Frontend/UI: "free", "occupied", "reserved"
+*/
+function normalizeToUiState(raw) {
+  const s = String(raw || "").trim().toUpperCase();
+  if (s === "EMPTY" || s === "FREE") return "free";
+  if (s === "RESERVED") return "reserved";
+  if (s === "OCCUPIED") return "occupied";
+  return "free";
+}
+
 /* ===== LOCAL BOOKING SAVE/LOAD ===== */
 function setMyBooking(slotId) { localStorage.setItem('mySlot', slotId || ''); }
 function getMyBooking() { return localStorage.getItem('mySlot') || ''; }
@@ -9,15 +21,16 @@ async function renderMap() {
   try {
     const res = await fetch(serverURL);
     if (!res.ok) throw new Error("Failed to fetch slot data");
-    const slots = await res.json(); // expects {A1:"FREE",B2:"OCCUPIED",...}
+    const slots = await res.json(); // {A1:"EMPTY", B2:"RESERVED", ...}
 
     Object.keys(slots).forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      const status = slots[id].toLowerCase();
-      el.className = `slot ${status}`;
-      el.innerHTML = `<span>${id}</span><span class="slot-id">${status.toUpperCase()}</span>`;
-      el.onclick = () => onSlotClick(id, status);
+
+      const uiState = normalizeToUiState(slots[id]); // "free" | "reserved" | "occupied"
+      el.className = `slot ${uiState}`;
+      el.innerHTML = `<span>${id}</span><span class="slot-id">${uiState.toUpperCase()}</span>`;
+      el.onclick = () => onSlotClick(id, uiState);
     });
   } catch (e) {
     console.error("Error fetching slot data:", e);
@@ -27,10 +40,13 @@ async function renderMap() {
 let selectedSlot = null;
 let action = null;
 
-function onSlotClick(id, status) {
-  if (status === 'occupied') return;
+function onSlotClick(id, uiState) {
+  // Don't allow clicking on occupied slots
+  if (uiState === 'occupied') return;
+
   selectedSlot = id;
-  action = status === 'free' ? 'reserve' : 'release';
+  // If free → user can reserve, else (reserved) → can release
+  action = uiState === 'free' ? 'reserve' : 'release';
 
   const modalSlot = document.getElementById('modalSlot');
   const modalTitle = document.getElementById('modalTitle');
@@ -45,30 +61,58 @@ function onSlotClick(id, status) {
   showModal();
 }
 
-function showModal() { const m = document.getElementById('modal'); if (m) m.classList.remove('hidden'); }
-function hideModal() { const m = document.getElementById('modal'); if (m) m.classList.add('hidden'); }
+function showModal() {
+  const m = document.getElementById('modal');
+  if (m) m.classList.remove('hidden');
+}
+function hideModal() {
+  const m = document.getElementById('modal');
+  if (m) m.classList.add('hidden');
+}
+
 function attachModalHandlers() {
   const cancelBtn = document.getElementById('cancelBtn');
   const confirmBtn = document.getElementById('confirmBtn');
   const modal = document.getElementById('modal');
 
   if (cancelBtn) cancelBtn.onclick = hideModal;
+
   if (confirmBtn) confirmBtn.onclick = async () => {
     if (!selectedSlot) return;
-    const newStatus = action === 'reserve' ? 'reserved' : 'free';
+
+    // what UI action user picked
+    const isReserve = action === 'reserve';
+
+    // Backend status:
+    // - reserve → "RESERVED" (server will auto-expire in 20 min)
+    // - release → "FREE" (server maps FREE → EMPTY)
+    const payload = isReserve
+      ? { status: "RESERVED" }               // you can also add durationMinutes: 20
+      : { status: "FREE" };
+
     try {
-      await fetch(`${serverURL}/${selectedSlot}`, {
+      const res = await fetch(`${serverURL}/${selectedSlot}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus })
+        body: JSON.stringify(payload)
       });
-      setMyBooking(newStatus === 'reserved' ? selectedSlot : '');
+
+      if (!res.ok) {
+        console.error("Server error updating slot:", await res.text());
+      } else {
+        setMyBooking(isReserve ? selectedSlot : '');
+      }
       hideModal();
     } catch (e) {
       console.error("Failed to update slot status:", e);
     }
   };
-  if (modal) modal.addEventListener('click', e => { if (e.target.id === 'modal') hideModal(); });
+
+  if (modal) {
+    modal.addEventListener('click', e => {
+      if (e.target.id === 'modal') hideModal();
+    });
+  }
 }
 
 /* ===== BOOKING PAGE ===== */
@@ -82,10 +126,11 @@ async function renderBooking() {
     const id = getMyBooking();
     if (!id) return;
     try {
+      // Release on backend → "FREE"
       await fetch(`${serverURL}/${id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'free' })
+        body: JSON.stringify({ status: 'FREE' })
       });
       setMyBooking('');
       if (info) info.textContent = 'No active booking.';
@@ -101,11 +146,12 @@ async function renderStats() {
     const res = await fetch(serverURL);
     if (!res.ok) throw new Error("Failed to fetch slot data");
     const slots = await res.json();
-    const vals = Object.values(slots || {});
+
+    const vals = Object.values(slots || {}).map(normalizeToUiState);
     const total = vals.length;
-    const free = vals.filter(s => s.toLowerCase() === 'free').length;
-    const reserved = vals.filter(s => s.toLowerCase() === 'reserved').length;
-    const occupied = vals.filter(s => s.toLowerCase() === 'occupied').length;
+    const free = vals.filter(s => s === 'free').length;
+    const reserved = vals.filter(s => s === 'reserved').length;
+    const occupied = vals.filter(s => s === 'occupied').length;
 
     const el = id => document.getElementById(id);
     if (el('statTotal')) el('statTotal').textContent = total;
