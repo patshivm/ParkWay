@@ -165,6 +165,3 @@ function drawChart(free, reserved, occupied) {
     setInterval(renderStats, 2000); // live update
   }
 })();
-
-
-
