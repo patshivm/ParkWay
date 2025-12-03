@@ -45,7 +45,7 @@
 
     <h1>Smart Parking. Simple Booking.</h1>
 
-    <!-- ⭐ LIVE STATS EXACTLY ⭐ -->
+    <!-- ⭐ LIVE STATS ⭐ -->
     <p id="liveLine">0 free • 0 reserved • 0 occupied</p>
 
     <div class="cta-row">
@@ -77,6 +77,15 @@ document.getElementById('year').textContent = new Date().getFullYear();
 const serverURL = "https://parkway-8fji.onrender.com/api/parking";
 const liveLine = document.getElementById("liveLine");
 
+// Same normalization logic as app.js
+function normalizeToUiState(raw) {
+  const s = String(raw || "").trim().toUpperCase();
+  if (s === "EMPTY" || s === "FREE") return "free";
+  if (s === "RESERVED") return "reserved";
+  if (s === "OCCUPIED") return "occupied";
+  return "free";
+}
+
 // ⭐ LIVE UPDATE FUNCTION
 async function updateLiveStatus() {
   try {
@@ -84,15 +93,13 @@ async function updateLiveStatus() {
     if (!res.ok) throw new Error("Failed");
 
     const slots = await res.json();
-    const values = Object.values(slots).map(v => v.toLowerCase());
+    const values = Object.values(slots).map(normalizeToUiState);
 
     const free = values.filter(v => v === "free").length;
     const reserved = values.filter(v => v === "reserved").length;
     const occupied = values.filter(v => v === "occupied").length;
 
-    // ⭐ EXACTLY like screenshot — nothing else changed
     liveLine.textContent = `${free} free • ${reserved} reserved • ${occupied} occupied`;
-
   } catch (err) {
     liveLine.textContent = "Live data unavailable";
   }
@@ -105,4 +112,3 @@ updateLiveStatus();
 
 </body>
 </html>
-
