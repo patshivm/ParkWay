@@ -1,176 +1,170 @@
-/* ===== CONFIG ===== */
-const API_URL = "https://parkway-8fji.onrender.com/api/parking";
-const POLL_INTERVAL = 2000;
+const serverURL = "https://parkway-8fji.onrender.com/api/parking";
 
 /* ===== LOCAL BOOKING SAVE/LOAD ===== */
-function setMyBooking(s) { localStorage.setItem("mySlot", s || ""); }
-function getMyBooking() { return localStorage.getItem("mySlot") || ""; }
+function setMyBooking(slotId) { localStorage.setItem('mySlot', slotId || ''); }
+function getMyBooking() { return localStorage.getItem('mySlot') || ''; }
 
-/* ===== NORMALIZE ===== */
-function normalizeStatus(raw) {
-  const s = String(raw || "").trim().toUpperCase();
-  if (["FREE", "RESERVED", "OCCUPIED"].includes(s)) return s;
-  return "FREE";
-}
-
-/* ===== SET UI COLORS ===== */
-function setSlotUI(slotEl, status) {
-  if (!slotEl) return;
-
-  slotEl.classList.remove("free", "reserved", "occupied");
-
-  const s = normalizeStatus(status);
-
-  if (s === "FREE") slotEl.classList.add("free");
-  if (s === "RESERVED") slotEl.classList.add("reserved");
-  if (s === "OCCUPIED") slotEl.classList.add("occupied");
-
-  // Add label top-left
-  let label = slotEl.querySelector(".slot-status");
-  if (!label) {
-    label = document.createElement("div");
-    label.className = "slot-status";
-    label.style.position = "absolute";
-    label.style.left = "6px";
-    label.style.top = "6px";
-    label.style.fontWeight = "700";
-    slotEl.appendChild(label);
-  }
-
-  label.textContent = (s === "FREE") ? "" : s;
-}
-
-/* ===== MAP PAGE ===== */
+/* ===== MAP PAGE RENDERING ===== */
 async function renderMap() {
   try {
-    const res = await fetch(API_URL, { cache:"no-store" });
-    if (!res.ok) return;
-
-    const slots = await res.json();
-    const my = getMyBooking();
+    const res = await fetch(serverURL);
+    if (!res.ok) throw new Error("Failed to fetch slot data");
+    const slots = await res.json(); // expects {A1:"FREE",B2:"OCCUPIED",...}
 
     Object.keys(slots).forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-
-      let status = normalizeStatus(slots[id]);
-
-      if (my === id && status !== "RESERVED")
-        status = "RESERVED";
-
-      setSlotUI(el, status);
-
-      if (!el._attached) {
-        el._attached = true;
-        el.addEventListener("click", () => onSlotClick(id));
-      }
+      const status = slots[id].toLowerCase();
+      el.className = `slot ${status}`;
+      el.innerHTML = `<span>${id}</span><span class="slot-id">${status.toUpperCase()}</span>`;
+      el.onclick = () => onSlotClick(id, status);
     });
-  } catch (e) { console.error(e); }
+  } catch (e) {
+    console.error("Error fetching slot data:", e);
+  }
 }
 
-/* ===== RESERVE IMMEDIATELY ===== */
-async function onSlotClick(slotId) {
-  const el = document.getElementById(slotId);
-  if (!el) return;
+let selectedSlot = null;
+let action = null;
 
-  if (el.classList.contains("occupied") || el.classList.contains("reserved"))
-    return;
+function onSlotClick(id, status) {
+  if (status === 'occupied') return;
+  selectedSlot = id;
+  action = status === 'free' ? 'reserve' : 'release';
 
-  setSlotUI(el, "RESERVED");
-  setMyBooking(slotId);
+  const modalSlot = document.getElementById('modalSlot');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalText = document.getElementById('modalText');
 
-  const res = await fetch(`${API_URL}/${slotId}`, {
-    method: "POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify({ status:"RESERVED" })
-  });
+  if (modalSlot) modalSlot.textContent = id;
+  if (modalTitle) modalTitle.textContent = action === 'reserve' ? 'Reserve Slot' : 'Release Slot';
+  if (modalText) modalText.innerHTML = action === 'reserve'
+    ? `Confirm reservation for <strong>${id}</strong>?`
+    : `Release reservation for <strong>${id}</strong>?`;
 
-  if (!res.ok) {
-    setSlotUI(el, "FREE");
-    setMyBooking("");
-    alert("Reservation failed");
-  }
+  showModal();
+}
+
+function showModal() { const m = document.getElementById('modal'); if (m) m.classList.remove('hidden'); }
+function hideModal() { const m = document.getElementById('modal'); if (m) m.classList.add('hidden'); }
+function attachModalHandlers() {
+  const cancelBtn = document.getElementById('cancelBtn');
+  const confirmBtn = document.getElementById('confirmBtn');
+  const modal = document.getElementById('modal');
+
+  if (cancelBtn) cancelBtn.onclick = hideModal;
+  if (confirmBtn) confirmBtn.onclick = async () => {
+    if (!selectedSlot) return;
+    const newStatus = action === 'reserve' ? 'reserved' : 'free';
+    try {
+      await fetch(`${serverURL}/${selectedSlot}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      setMyBooking(newStatus === 'reserved' ? selectedSlot : '');
+      hideModal();
+    } catch (e) {
+      console.error("Failed to update slot status:", e);
+    }
+  };
+  if (modal) modal.addEventListener('click', e => { if (e.target.id === 'modal') hideModal(); });
 }
 
 /* ===== BOOKING PAGE ===== */
 async function renderBooking() {
-  const info = document.getElementById("bookingInfo");
-  const btn = document.getElementById("releaseBtn");
+  const info = document.getElementById('bookingInfo');
   const my = getMyBooking();
+  if (info) info.textContent = my ? `Active booking: ${my} (Reserved)` : 'No active booking.';
 
-  if (!my) {
-    info.textContent = "No active booking.";
-    btn.style.display = "none";
-    return;
-  }
-
-  btn.style.display = "inline-block";
-  info.textContent = `Active booking: ${my} (checking...)`;
-
-  const res = await fetch(API_URL, { cache:"no-store" });
-  const slots = await res.json();
-
-  const s = normalizeStatus(slots[my]);
-
-  if (s === "RESERVED") {
-    info.textContent = `Active booking: ${my} (RESERVED)`;
-  } else {
-    setMyBooking("");
-    info.textContent = "No active booking.";
-    btn.style.display = "none";
-  }
-
-  btn.onclick = async () => {
-    await fetch(`${API_URL}/${my}`, {
-      method: "POST",
-      headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({ status:"FREE" })
-    });
-    setMyBooking("");
-    info.textContent = "No active booking.";
-    btn.style.display = "none";
-    renderMap();
+  const releaseBtn = document.getElementById('releaseBtn');
+  if (releaseBtn) releaseBtn.onclick = async () => {
+    const id = getMyBooking();
+    if (!id) return;
+    try {
+      await fetch(`${serverURL}/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'free' })
+      });
+      setMyBooking('');
+      if (info) info.textContent = 'No active booking.';
+    } catch (e) {
+      console.error("Failed to release booking:", e);
+    }
   };
 }
 
-/* ===== DASHBOARD ===== */
+/* ===== DASHBOARD PAGE ===== */
 async function renderStats() {
-  const res = await fetch(API_URL, { cache:"no-store" });
-  if (!res.ok) return;
+  try {
+    const res = await fetch(serverURL);
+    if (!res.ok) throw new Error("Failed to fetch slot data");
+    const slots = await res.json();
+    const vals = Object.values(slots || {});
+    const total = vals.length;
+    const free = vals.filter(s => s.toLowerCase() === 'free').length;
+    const reserved = vals.filter(s => s.toLowerCase() === 'reserved').length;
+    const occupied = vals.filter(s => s.toLowerCase() === 'occupied').length;
 
-  const slots = await res.json();
-  const vals = Object.values(slots).map(normalizeStatus);
+    const el = id => document.getElementById(id);
+    if (el('statTotal')) el('statTotal').textContent = total;
+    if (el('statFree')) el('statFree').textContent = free;
+    if (el('statReserved')) el('statReserved').textContent = reserved;
+    if (el('statOccupied')) el('statOccupied').textContent = occupied;
 
-  const total = vals.length;
-  const free = vals.filter(s => s === "FREE").length;
-  const reserved = vals.filter(s => s === "RESERVED").length;
-  const occupied = vals.filter(s => s === "OCCUPIED").length;
+    drawChart(free, reserved, occupied);
+  } catch (e) {
+    console.error("Error fetching stats:", e);
+  }
+}
 
-  document.getElementById("statTotal").textContent = total;
-  document.getElementById("statFree").textContent = free;
-  document.getElementById("statReserved").textContent = reserved;
-  document.getElementById("statOccupied").textContent = occupied;
+function drawChart(free, reserved, occupied) {
+  const c = document.getElementById('usageChart');
+  if (!c) return;
+  const ctx = c.getContext('2d');
+  ctx.clearRect(0, 0, c.width, c.height);
+
+  const data = [free, reserved, occupied];
+  const labels = ['Free', 'Reserved', 'Occupied'];
+  const colors = ['#24ff6d', '#ffd056', '#ff5252'];
+  const max = Math.max(1, ...data);
+  let x = 120, yBase = c.height - 40;
+  const barW = 120, gap = 80;
+  ctx.font = '16px Poppins';
+
+  labels.forEach((lab, i) => {
+    const h = (data[i] / max) * (c.height - 100);
+    ctx.fillStyle = colors[i];
+    ctx.shadowColor = colors[i];
+    ctx.shadowBlur = 18;
+    ctx.fillRect(x, yBase - h, barW, h);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#eef6ff';
+    ctx.textAlign = 'center';
+    ctx.fillText(String(data[i]), x + barW / 2, yBase - h - 8);
+    ctx.fillStyle = '#9fb0c3';
+    ctx.fillText(lab, x + barW / 2, yBase + 24);
+    x += barW + gap;
+  });
 }
 
 /* ===== INIT ===== */
-document.addEventListener("DOMContentLoaded", () => {
-  const p = window.PAGE;
-
-  if (p === "MAP") {
+(function init() {
+  const page = window.PAGE || 'HOME';
+  if (page === 'MAP') {
     renderMap();
-    setInterval(renderMap, POLL_INTERVAL);
+    attachModalHandlers();
+    setInterval(renderMap, 2000); // live update every 2 sec
   }
-
-  if (p === "BOOKING") {
+  if (page === 'BOOKING') {
     renderBooking();
-    setInterval(renderBooking, POLL_INTERVAL);
   }
-
-  if (p === "DASHBOARD") {
+  if (page === 'DASHBOARD') {
     renderStats();
-    setInterval(renderStats, POLL_INTERVAL);
+    setInterval(renderStats, 2000); // live update
   }
-});
+})();
 
 
 
