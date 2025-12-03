@@ -6,143 +6,310 @@
 <title>Parkway • Parking Map</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-/* -------- YOUR EXISTING MAP UI (unchanged) -------- */
 :root{
   --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
-  --free:#24ff6d; --reserved:#ffd056; --occupied:#ff5252;
+  --asphalt: #2b2b2b;
+  --asphalt-dark: #1f1f1f;
+  --slot-border: #ffd700;
+  --road-width: 120px;
+  --hroad-height: 72px;
+  --gutter: 22px;
+
+  --free: #24ff6d;
+  --reserved: #ffd056;
+  --occupied: #ff5252;
 }
 
-/* YOUR EXISTING CSS unchanged */
-body{margin:0;font-family:Poppins;background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3)) fixed;color:#fff}
-.slot.free{border-color:var(--free)} .slot.reserved{border-color:var(--reserved)} .slot.occupied{border-color:var(--occupied)}
-/* (Your full CSS stays as-is… I'm not repeating all of it here for space) */
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;padding:0}
+body{
+  margin:0;
+  font-family:"Poppins",sans-serif;
+  color:#fff;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3)) fixed;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
 
-/* -------- MODAL POPUP -------- */
-#modal {
-  position: fixed;
-  top:0; left:0; width:100%; height:100%;
-  background: rgba(0,0,0,0.55);
-  display:flex; justify-content:center; align-items:center;
-  z-index:1000; visibility:hidden; opacity:0;
-  transition: 0.2s ease;
+header.topbar{
+  background:rgba(0,0,0,0.28);
+  padding:.6rem 1.75rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  backdrop-filter: blur(6px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
 }
-#modal.show {
-  visibility:visible; opacity:1;
+header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
+
+.container{
+  max-width:1400px;
+  margin:1.75rem auto;
+  padding:0 1rem;
 }
-.modal-box {
-  background:#0f2027;
-  padding:20px;
+
+.panel{
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
   border-radius:10px;
-  width:300px;
-  text-align:center;
-  box-shadow:0 10px 40px rgba(0,0,0,0.5);
+  padding:1rem;
+  box-shadow:0 10px 40px rgba(0,0,0,0.35);
+  border:1px solid rgba(255,255,255,0.04);
 }
-button {
-  margin:8px; padding:10px 18px; border:none; border-radius:6px;
-  cursor:pointer; font-weight:600;
+
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.legend{font-size:0.92rem}
+.legend .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.legend .free{background:var(--free)} .legend .reserved{background:var(--reserved)} .legend .occupied{background:var(--occupied)}
+
+.lot-grid{
+  display:grid;
+  grid-template-columns: 1fr var(--road-width) 1fr;
+  grid-template-rows: auto var(--hroad-height) auto var(--hroad-height) auto;
+  gap: var(--gutter);
+  position:relative;
+  padding:28px;
+  border-radius:8px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.12));
+  border:1px solid rgba(255,255,255,0.03);
 }
-.btn-confirm { background:#ffd056; color:#000; }
-.btn-cancel { background:#444; color:#fff; }
+
+/* Roads */
+.vertical-road{
+  grid-column:2 / 3;
+  grid-row:1 / 6;
+  background: linear-gradient(180deg, var(--asphalt-dark), rgba(0,0,0,0.6));
+  border-radius:8px;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2;
+}
+.vertical-road::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:0;
+  transform:translateX(-50%);
+  width:6px;
+  height:100%;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.9) 0 18px,
+    transparent 18px 36px
+  );
+  opacity:0.7;
+}
+.hroad{
+  grid-column:1 / 4;
+  height:var(--hroad-height);
+  background: linear-gradient(90deg, var(--asphalt-dark), rgba(0,0,0,0.6));
+  position:relative;
+  border-radius:6px;
+  z-index:2;
+}
+.hroad::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:50%;
+  transform:translateY(-50%);
+  height:6px;
+  width:100%;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(255,255,255,0.9) 0 24px,
+    transparent 24px 48px
+  );
+}
+
+/* Parking Slots */
+.band{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  padding:6px 6px;
+}
+.park-row{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:flex-start;
+}
+.slot{
+  width:64px;
+  height:96px;
+  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.25));
+  border:2px solid rgba(255,255,255,0.06);
+  border-radius:6px;
+  color:#fff;
+  font-weight:700;
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-end;
+  position:relative;
+  z-index:3;
+  transition: transform .12s ease, box-shadow .12s ease;
+  cursor:pointer;
+}
+.slot:hover{ transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
+.slot-number{
+  font-size:.65rem;
+  opacity:0.95;
+  padding:6px 8px;
+  border-radius:4px;
+  background:rgba(0,0,0,0.25);
+}
+
+/* Unified slot visuals using status variables */
+.slot.free{ background: linear-gradient(180deg, rgba(36,255,109,0.12), rgba(36,255,109,0.06)); border-color: var(--free); box-shadow: 0 6px 18px rgba(36,255,109,0.06); }
+.slot.reserved{ background: linear-gradient(180deg, rgba(255,208,86,0.12), rgba(255,208,86,0.06)); border-color: var(--reserved); box-shadow: 0 6px 18px rgba(255,208,86,0.06); }
+.slot.occupied{ background: linear-gradient(180deg, rgba(255,82,82,0.12), rgba(255,82,82,0.06)); border-color: var(--occupied); box-shadow: 0 6px 18px rgba(255,82,82,0.06); }
+
+/* Entrance & Exit Labels */
+.entrance, .exit{
+  position:absolute;
+  padding:6px 10px;
+  border-radius:6px;
+  font-weight:700;
+  z-index:5;
+}
+.entrance{top:-20px; left:50%; transform:translateX(-50%); background:var(--free); color:#07121a;}
+.exit{bottom:-20px; left:50%; transform:translateX(-50%); background:var(--occupied); color:#07121a;}
+
+@media (max-width:900px){
+  .lot-grid{grid-template-columns: 1fr 96px 1fr; padding:18px}
+  .slot{width:52px;height:82px}
+}
 </style>
 </head>
-
 <body>
 <header class="topbar">
   <div class="brand"><a href="index.html">🚗 Parkway</a></div>
+  <nav class="navlinks">
+    <a href="index.html">Home</a>
+    <a href="map.html">Parking Map</a>
+    <a href="booking.html">My Booking</a>
+    <a href="dashboard.html">Dashboard</a>
+    <a href="about.html">How It Works</a>
+    <a href="contact.html">Contact</a>
+  </nav>
 </header>
 
-<!-- ========================================================= -->
-<!--  YOUR PARKING GRID (unchanged)                           -->
-<!-- ========================================================= -->
-<!-- (I am keeping your original map exactly the same) -->
+<main class="container">
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Live Parking Map</h2>
+      <div class="legend" aria-hidden="false">
+        <span class="dot free"></span> Free
+        <span style="margin-left:12px" class="dot reserved"></span> Reserved
+        <span style="margin-left:12px" class="dot occupied"></span> Occupied
+      </div>
+    </div>
 
-<!-- MODAL POPUP -->
-<div id="modal">
-  <div class="modal-box">
-    <h3 id="modalTitle">Reserve Slot</h3>
-    <p id="modalText">Confirm?</p>
-    <button class="btn-confirm" id="confirmBtn">Confirm</button>
-    <button class="btn-cancel" id="cancelBtn">Cancel</button>
-  </div>
-</div>
+    <div class="lot-grid" role="region" aria-label="Parking lot map">
+      <div class="vertical-road" aria-hidden="true"></div>
+
+      <!-- Bands: A–D with 5 slots each -->
+      <div class="band" style="grid-column:1 / 2; grid-row:1 / 2;">
+        <div class="park-row">
+          <div class="slot free" id="A1"><span class="slot-number">A1</span></div>
+          <div class="slot free" id="A2"><span class="slot-number">A2</span></div>
+          <div class="slot free" id="A3"><span class="slot-number">A3</span></div>
+          <div class="slot free" id="A4"><span class="slot-number">A4</span></div>
+          <div class="slot free" id="A5"><span class="slot-number">A5</span></div>
+        </div>
+      </div>
+
+      <div class="band" style="grid-column:3 / 4; grid-row:1 / 2;">
+        <div class="park-row">
+          <div class="slot free" id="B1"><span class="slot-number">B1</span></div>
+          <div class="slot free" id="B2"><span class="slot-number">B2</span></div>
+          <div class="slot free" id="B3"><span class="slot-number">B3</span></div>
+          <div class="slot free" id="B4"><span class="slot-number">B4</span></div>
+          <div class="slot free" id="B5"><span class="slot-number">B5</span></div>
+        </div>
+      </div>
+
+      <div class="band" style="grid-column:1 / 2; grid-row:3 / 4;">
+        <div class="park-row">
+          <div class="slot free" id="C1"><span class="slot-number">C1</span></div>
+          <div class="slot free" id="C2"><span class="slot-number">C2</span></div>
+          <div class="slot free" id="C3"><span class="slot-number">C3</span></div>
+          <div class="slot free" id="C4"><span class="slot-number">C4</span></div>
+          <div class="slot free" id="C5"><span class="slot-number">C5</span></div>
+        </div>
+      </div>
+
+      <div class="band" style="grid-column:3 / 4; grid-row:3 / 4;">
+        <div class="park-row">
+          <div class="slot free" id="D1"><span class="slot-number">D1</span></div>
+          <div class="slot free" id="D2"><span class="slot-number">D2</span></div>
+          <div class="slot free" id="D3"><span class="slot-number">D3</span></div>
+          <div class="slot free" id="D4"><span class="slot-number">D4</span></div>
+          <div class="slot free" id="D5"><span class="slot-number">D5</span></div>
+        </div>
+      </div>
+
+      <div class="hroad" style="grid-column:1 / 4; grid-row:2 / 3;" aria-hidden="true"></div>
+      <div class="hroad" style="grid-column:1 / 4; grid-row:4 / 5;" aria-hidden="true"></div>
+
+      <div class="entrance" aria-hidden="true">ENTRANCE</div>
+      <div class="exit" aria-hidden="true">EXIT</div>
+    </div>
+  </section>
+</main>
 
 <script>
-/* ============================================================
-   BACKEND URL
-============================================================ */
-const API = "https://parkway-8fji.onrender.com/api/parking";
+/*
+  Live slot updater (unknown removed)
+  - backend should return: "FREE", "RESERVED", "OCCUPIED"
+  - maps those to CSS classes: free, reserved, occupied
+  - any other value will be treated as FREE for compatibility
+*/
 
-/* ============================================================
-   OPEN MODAL WHEN YOU CLICK A SLOT
-============================================================ */
-let selectedSlot = null;
+const API_URL = "/api/parking"; // change to full URL if needed
+let fetching = false;
 
-document.querySelectorAll(".slot").forEach(slot => {
-  slot.addEventListener("click", () => {
-    selectedSlot = slot.id;
-    document.getElementById("modalTitle").innerText = "Reserve Slot";
-    document.getElementById("modalText").innerHTML =
-      `Do you want to reserve <strong>${selectedSlot}</strong>?`;
-
-    openModal();
-  });
-});
-
-/* ============================================================
-   MODAL CONTROLS
-============================================================ */
-const modal = document.getElementById("modal");
-
-function openModal() { modal.classList.add("show"); }
-function closeModal() { modal.classList.remove("show"); }
-
-document.getElementById("cancelBtn").onclick = closeModal;
-
-/* ============================================================
-   CONFIRM RESERVATION BUTTON
-============================================================ */
-document.getElementById("confirmBtn").onclick = async () => {
-  if (!selectedSlot) return;
-
-  // Send reservation request
-  const res = await fetch(`${API}/${selectedSlot}`, {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({ status:"RESERVED", durationMinutes:20 })
-  });
-
-  if (res.ok) {
-    console.log("Slot reserved:", selectedSlot);
-    closeModal();
-    fetchSlots();  // refresh UI
-  } else {
-    alert("Failed to reserve. Check server.");
-  }
-};
-
-/* ============================================================
-   LIVE UPDATER (shows yellow/red/green)
-============================================================ */
-async function fetchSlots() {
-  const res = await fetch(API);
-  if (!res.ok) return;
-
-  const data = await res.json();
-
-  Object.keys(data).forEach(id => {
-    const slotEl = document.getElementById(id);
-    if (!slotEl) return;
-
-    slotEl.classList.remove("free","reserved","occupied");
-
-    if (data[id] === "EMPTY") slotEl.classList.add("free");
-    if (data[id] === "RESERVED") slotEl.classList.add("reserved");
-    if (data[id] === "OCCUPIED") slotEl.classList.add("occupied");
-  });
+function normalizeStatus(s) {
+  const st = String(s || "").trim().toUpperCase();
+  if (st === "FREE" || st === "EMPTY") return "FREE";
+  if (st === "RESERVED") return "RESERVED";
+  if (st === "OCCUPIED") return "OCCUPIED";
+  // default fallback: treat unknown as FREE (no "unknown" class)
+  return "FREE";
 }
 
-fetchSlots();
-setInterval(fetchSlots, 2000);
+async function fetchSlots() {
+  if (fetching) return;
+  fetching = true;
+  try {
+    const res = await fetch(API_URL, { cache: "no-store" });
+    if (!res.ok) {
+      console.error("Failed to fetch slots:", res.status, res.statusText);
+      return;
+    }
+    const data = await res.json();
+    Object.keys(data || {}).forEach(id => {
+      const slotEl = document.getElementById(id);
+      if (!slotEl) return;
+      const status = normalizeStatus(data[id]);
+      slotEl.classList.remove("free","reserved","occupied");
+      if (status === "FREE") slotEl.classList.add("free");
+      else if (status === "RESERVED") slotEl.classList.add("reserved");
+      else if (status === "OCCUPIED") slotEl.classList.add("occupied");
+    });
+  } catch (err) {
+    console.error("Error fetching slots:", err);
+  } finally {
+    fetching = false;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  fetchSlots();
+  setInterval(fetchSlots, 2000); // update every 2 seconds
+});
 </script>
 </body>
 </html>
