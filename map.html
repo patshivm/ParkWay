@@ -117,23 +117,26 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 .slot.reserved{ background: rgba(255,208,86,0.15); border-color: var(--reserved); }
 .slot.occupied{ background: rgba(255,82,82,0.12); border-color: var(--occupied); }
 
-.entrance, .exit{
-  position:absolute; padding:6px 10px; border-radius:6px; font-weight:700;
-}
+/* ————————————————————— */
+/* ⭐ FIXED VISIBILITY: ENTRANCE / EXIT */
+/* ————————————————————— */
 .entrance {
-  top: -32px;              /* moved slightly upward */
+  top: -10px;        /* lowered → visible */
   left: 50%;
   transform: translateX(-50%);
   background: var(--free);
-  padding: 8px 14px;       /* optional: better size */
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 700;
 }
-
 .exit {
-  bottom: -32px;           /* moved slightly downward */
+  bottom: -10px;     /* raised → visible */
   left: 50%;
   transform: translateX(-50%);
   background: var(--occupied);
-  padding: 8px 14px;       /* optional */
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-weight: 700;
 }
 </style>
 </head>
@@ -164,11 +167,10 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
       </div>
     </div>
 
-    <!-- LOT GRID (unchanged) -->
     <div class="lot-grid">
       <div class="vertical-road"></div>
 
-      <!-- A -->
+      <!-- A ROW -->
       <div class="band" style="grid-column:1/2; grid-row:1/2;">
         <div class="park-row">
           <div class="slot free" id="A1"><span class="slot-number">A1</span></div>
@@ -179,7 +181,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
         </div>
       </div>
 
-      <!-- B -->
+      <!-- B ROW -->
       <div class="band" style="grid-column:3/4; grid-row:1/2;">
         <div class="park-row">
           <div class="slot free" id="B1"><span class="slot-number">B1</span></div>
@@ -190,7 +192,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
         </div>
       </div>
 
-      <!-- C -->
+      <!-- C ROW -->
       <div class="band" style="grid-column:1/2; grid-row:3/4;">
         <div class="park-row">
           <div class="slot free" id="C1"><span class="slot-number">C1</span></div>
@@ -201,7 +203,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
         </div>
       </div>
 
-      <!-- D -->
+      <!-- D ROW -->
       <div class="band" style="grid-column:3/4; grid-row:3/4;">
         <div class="park-row">
           <div class="slot free" id="D1"><span class="slot-number">D1</span></div>
@@ -237,10 +239,6 @@ function normalizeStatus(s) {
 
 /* When user clicks a slot */
 function onSlotClick(slotId, currentState) {
-
-  // ----------------------------------
-  // 🚫 BLOCK if already reserved/occupied
-  // ----------------------------------
   if (currentState === "RESERVED" || currentState === "OCCUPIED") {
     alert(`Spot ${slotId} is already ${currentState.toLowerCase()}!`);
     return;
@@ -283,11 +281,8 @@ async function fetchSlots() {
       const s = normalizeStatus(data[id]);
 
       el.classList.remove("free","reserved","occupied");
-      if (s === "FREE") el.classList.add("free");
-      if (s === "RESERVED") el.classList.add("reserved");
-      if (s === "OCCUPIED") el.classList.add("occupied");
+      el.classList.add(s.toLowerCase());
 
-      // Updated click handler (with protection)
       el.onclick = () => onSlotClick(id, s);
     });
 
@@ -306,4 +301,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
-
