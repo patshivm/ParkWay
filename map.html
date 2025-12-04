@@ -117,26 +117,31 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 .slot.reserved{ background: rgba(255,208,86,0.15); border-color: var(--reserved); }
 .slot.occupied{ background: rgba(255,82,82,0.12); border-color: var(--occupied); }
 
-/* ————————————————————— */
-/* ⭐ FIXED VISIBILITY: ENTRANCE / EXIT */
-/* ————————————————————— */
 .entrance {
-  top: -10px;        /* lowered → visible */
+  position: absolute;
+  top: -14px;              /* perfectly aligned above the road */
   left: 50%;
   transform: translateX(-50%);
   background: var(--free);
-  padding: 8px 14px;
+  padding: 6px 10px;
   border-radius: 6px;
   font-weight: 700;
+  font-size: 0.85rem;      /* same size as before */
+  z-index: 5;
 }
+
 .exit {
-  bottom: -10px;     /* raised → visible */
+  position: absolute;
+  bottom: -14px;           /* perfectly aligned under the road */
   left: 50%;
   transform: translateX(-50%);
   background: var(--occupied);
-  padding: 8px 14px;
+  padding: 6px 10px;
   border-radius: 6px;
   font-weight: 700;
+  font-size: 0.85rem;      /* same size as before */
+  z-index: 5;
+}
 }
 </style>
 </head>
