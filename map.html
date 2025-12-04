@@ -31,6 +31,8 @@ body{
   font-family:"Poppins",sans-serif;
   color:#fff;
   background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3)) fixed;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
 }
 
 header.topbar{
@@ -71,22 +73,30 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   position:relative;
   padding:28px;
   border-radius:8px;
-  background: rgba(0,0,0,0.18);
+  background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.12));
+  border:1px solid rgba(255,255,255,0.03);
 }
 
-/* Roads & slots — unchanged */
 .vertical-road{
   grid-column:2 / 3;
   grid-row:1 / 6;
-  background: var(--asphalt-dark);
+  background: linear-gradient(180deg, var(--asphalt-dark), rgba(0,0,0,0.6));
   border-radius:8px;
   position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:2;
 }
+
 .vertical-road::after{
   content:"";
   position:absolute;
-  left:50%; transform:translateX(-50%);
-  width:6px;height:100%;
+  left:50%;
+  top:0;
+  transform:translateX(-50%);
+  width:6px;
+  height:100%;
   background-image: repeating-linear-gradient(
     to bottom,
     rgba(255,255,255,0.9) 0 18px,
@@ -94,18 +104,24 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   );
   opacity:0.7;
 }
+
 .hroad{
   grid-column:1 / 4;
   height:var(--hroad-height);
-  background: var(--asphalt-dark);
+  background: linear-gradient(90deg, var(--asphalt-dark), rgba(0,0,0,0.6));
+  position:relative;
   border-radius:6px;
+  z-index:2;
 }
+
 .hroad::before{
   content:"";
   position:absolute;
-  left:0; top:50%;
+  left:0;
+  top:50%;
   transform:translateY(-50%);
-  height:6px;width:100%;
+  height:6px;
+  width:100%;
   background-image: repeating-linear-gradient(
     to right,
     rgba(255,255,255,0.9) 0 24px,
@@ -117,20 +133,25 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 .park-row{ display:flex; gap:8px; align-items:center; }
 
 .slot{
-  width:64px;height:96px;
+  width:64px;
+  height:96px;
   background:rgba(255,255,255,0.02);
   border:2px solid rgba(255,255,255,0.06);
   border-radius:6px;
-  cursor:pointer;
+  color:#fff;
+  font-weight:700;
   display:flex;
   align-items:flex-end;
   justify-content:flex-end;
+  position:relative;
+  cursor:pointer;
 }
 .slot-number{
   font-size:.65rem;
+  opacity:0.95;
   padding:6px 8px;
-  background:rgba(0,0,0,0.25);
   border-radius:4px;
+  background:rgba(0,0,0,0.25);
 }
 
 .slot.free{ background: rgba(36,255,109,0.1); border-color: var(--free); }
@@ -142,6 +163,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   padding:6px 10px;
   border-radius:6px;
   font-weight:700;
+  z-index:5;
 }
 .entrance{top:-20px; left:50%; transform:translateX(-50%); background:var(--free);}
 .exit{bottom:-20px; left:50%; transform:translateX(-50%); background:var(--occupied);}
@@ -175,6 +197,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
       </div>
     </div>
 
+    <!-- LOT GRID (unchanged) -->
     <div class="lot-grid">
       <div class="vertical-road"></div>
 
@@ -245,8 +268,9 @@ function normalizeStatus(s) {
   return "FREE";
 }
 
-/* User click → reserve */
+/* WHEN USER CLICKS SLOT */
 function onSlotClick(slotId) {
+
   const yes = confirm(`Do you want to reserve ${slotId}?`);
   if (!yes) return;
 
@@ -257,10 +281,15 @@ function onSlotClick(slotId) {
   })
   .then(r => r.json())
   .then(d => {
+
+    console.log("Reserved:", d);
+
+    /* ⭐ FIX: Save active booking ⭐ */
     localStorage.setItem("reservedSlot", slotId);
+
     alert(`${slotId} reserved!`);
   })
-  .catch(err => console.error(err));
+  .catch(err => console.error("ERR:", err));
 }
 
 /* LIVE UPDATE */
@@ -275,7 +304,6 @@ async function fetchSlots() {
     if (!res.ok) return;
 
     const data = await res.json();
-    const my = localStorage.getItem("reservedSlot");
 
     Object.keys(data).forEach(id => {
       const el = document.getElementById(id);
@@ -284,19 +312,11 @@ async function fetchSlots() {
       const s = normalizeStatus(data[id]);
 
       el.classList.remove("free","reserved","occupied");
-
-      if (s === "FREE") {
-        el.classList.add("free");
-
-        /* ⭐ FIX: if this was MY reserved slot → clear it */
-        if (my === id) {
-          localStorage.removeItem("reservedSlot");
-        }
-      }
-
+      if (s === "FREE") el.classList.add("free");
       if (s === "RESERVED") el.classList.add("reserved");
       if (s === "OCCUPIED") el.classList.add("occupied");
 
+      /* Make clickable */
       el.onclick = () => onSlotClick(id);
     });
 
