@@ -34,6 +34,7 @@ function normalizeStatus(raw) {
   return "EMPTY";
 }
 
+// Auto-expire old reservations
 function expireReservations() {
   const now = Date.now();
   for (const id in reservations) {
@@ -47,11 +48,11 @@ function expireReservations() {
   }
 }
 
-// Apply slot change (sensor or website)
+// Apply slot update (sensor or website)
 function setSlotStatus(slotId, status, durationMinutes) {
   const normalized = normalizeStatus(status);
 
-  // website setting RESERVED
+  // Website sets RESERVED
   if (normalized === "RESERVED") {
     const mins = durationMinutes ? Number(durationMinutes) : 20;
     const expiry = Date.now() + mins * 60000;
@@ -61,16 +62,17 @@ function setSlotStatus(slotId, status, durationMinutes) {
     return;
   }
 
-  // Sensor sending EMPTY but reservation still active → ignore
-  if (normalized === "EMPTY" && reservations[slotId]) {
-    console.log(`Ignoring EMPTY for ${slotId} (reserved)`);
+  // ⭐ FIX: Website sends EMPTY → release immediately  
+  if (normalized === "EMPTY") {
+    delete reservations[slotId];
+    slots[slotId] = "EMPTY";
+    console.log(`🟢 Slot ${slotId} released → EMPTY`);
     return;
   }
 
-  // Otherwise normal update
+  // Normal update (sensor sends OCCUPIED or EMPTY)
   slots[slotId] = normalized;
 
-  // If not RESERVED, clear timer
   if (normalized !== "RESERVED") {
     delete reservations[slotId];
   }
@@ -113,3 +115,4 @@ app.get("/api/parking/:slotId", (req,res)=>{
 });
 
 app.listen(PORT, ()=>console.log(`Server running on port ${PORT}`));
+
