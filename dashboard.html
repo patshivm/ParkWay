@@ -23,6 +23,7 @@
 <main class="container">
   <section class="panel glass">
     <h2>Dashboard</h2>
+
     <div class="stats">
       <div class="stat">
         <div class="stat-num" id="statTotal">0</div>
@@ -41,6 +42,7 @@
         <div class="stat-label">Occupied</div>
       </div>
     </div>
+
     <canvas id="usageChart" width="900" height="300" class="chart"></canvas>
   </section>
 </main>
@@ -48,8 +50,93 @@
 <footer class="site-footer">
   <small>©️ <span id="year"></span> Parkway • Smart Parking System</small>
 </footer>
-<script src="app.js"></script>
-<script>window.PAGE='DASHBOARD';</script>
-<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+window.PAGE = 'DASHBOARD';
+document.getElementById('year').textContent = new Date().getFullYear();
+
+// ------------------------------
+// LIVE DASHBOARD UPDATE
+// ------------------------------
+
+let chart;
+const API_URL = "/api/parking";
+
+// Convert API response into stats
+function computeStats(data) {
+  const total = Object.keys(data).length;
+  let free = 0, reserved = 0, occupied = 0;
+
+  Object.values(data).forEach(slot => {
+    const st = slot.status?.toUpperCase();
+    if (st === "FREE" || st === "EMPTY") free++;
+    else if (st === "RESERVED") reserved++;
+    else if (st === "OCCUPIED") occupied++;
+  });
+
+  return { total, free, reserved, occupied };
+}
+
+async function fetchData() {
+  try {
+    const res = await fetch(API_URL, { cache: "no-store" });
+    if (!res.ok) return;
+
+    const data = await res.json();
+    updateDashboard(data);
+
+  } catch (err) {
+    console.error("Dashboard fetch error:", err);
+  }
+}
+
+function updateDashboard(data) {
+  const stats = computeStats(data);
+
+  document.getElementById("statTotal").textContent = stats.total;
+  document.getElementById("statFree").textContent = stats.free;
+  document.getElementById("statReserved").textContent = stats.reserved;
+  document.getElementById("statOccupied").textContent = stats.occupied;
+
+  updateChart(stats);
+}
+
+// Initialize chart only once
+function initChart() {
+  const ctx = document.getElementById("usageChart").getContext("2d");
+
+  chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Free", "Reserved", "Occupied"],
+      datasets: [{
+        label: "Live Slot Status",
+        data: [0, 0, 0],
+        backgroundColor: ["#24ff6d", "#ffd056", "#ff5252"],
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false } }
+    }
+  });
+}
+
+function updateChart(stats) {
+  if (!chart) return;
+  chart.data.datasets[0].data = [stats.free, stats.reserved, stats.occupied];
+  chart.update();
+}
+
+// Start live updates
+document.addEventListener("DOMContentLoaded", () => {
+  initChart();
+  fetchData();
+  setInterval(fetchData, 2000); // 🔥 LIVE EVERY 2 SECONDS
+});
+</script>
+
 </body>
 </html>
