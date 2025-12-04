@@ -4,17 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Parkway • My Booking</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+
+<style>
+  #countdown {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: 10px;
+    color: #ffd056;
+  }
+</style>
 </head>
 
 <body>
+
 <header class="topbar">
   <div class="brand"><a href="index.html">🚗 Parkway</a></div>
   <nav class="navlinks">
     <a href="index.html">Home</a>
     <a href="map.html">Parking Map</a>
-    <a href="booking.html" class="active">My Booking</a>
+    <a href="booking.html">My Booking</a>
     <a href="dashboard.html">Dashboard</a>
     <a href="about.html">How It Works</a>
     <a href="contact.html">Contact</a>
@@ -22,25 +33,18 @@
 </header>
 
 <main class="container narrow">
-
   <section class="panel glass center">
     <h2>Your Booking</h2>
 
-    <!-- LIVE BOOKING STATUS -->
-    <div id="bookingInfo" class="booking-card">
-      Loading booking…
-    </div>
+    <div id="bookingInfo" class="booking-card">No active booking.</div>
+    <div id="countdown"></div>
 
-    <!-- RELEASE BUTTON -->
-    <button id="releaseBtn" class="btn outline mt">
-      Release My Slot
-    </button>
+    <button id="releaseBtn" class="btn outline mt" style="display:none;">Release My Slot</button>
 
     <p class="muted small mt">
-      Tip: Select a slot from the <a href="map.html">Parking Map</a> to reserve.
+      Tip: Select a slot on the <a href="map.html">Parking Map</a> to reserve.
     </p>
   </section>
-
 </main>
 
 <footer class="site-footer">
@@ -48,14 +52,103 @@
 </footer>
 
 <script>
-  document.getElementById('year').textContent = new Date().getFullYear();
+document.getElementById('year').textContent = new Date().getFullYear();
+
+const API = "/api/parking";
+const bookingInfo = document.getElementById("bookingInfo");
+const releaseBtn = document.getElementById("releaseBtn");
+const countdownEl = document.getElementById("countdown");
+
+let currentSlot = localStorage.getItem("reservedSlot") || null;
+let countdownTimer = null;
+
+/* Convert ms → MM:SS */
+function formatTime(ms) {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+/* Start countdown timer */
+function startCountdown(expiry) {
+  clearInterval(countdownTimer);
+
+  countdownTimer = setInterval(() => {
+    const now = Date.now();
+    const diff = expiry - now;
+
+    if (diff <= 0) {
+      countdownEl.textContent = "Expired";
+      bookingInfo.textContent = "No active booking.";
+      releaseBtn.style.display = "none";
+      localStorage.removeItem("reservedSlot");
+      clearInterval(countdownTimer);
+      return;
+    }
+
+    countdownEl.textContent = "Expires in: " + formatTime(diff);
+  }, 1000);
+}
+
+/* Load status from server */
+async function loadBooking() {
+  if (!currentSlot) {
+    bookingInfo.textContent = "No active booking.";
+    countdownEl.textContent = "";
+    releaseBtn.style.display = "none";
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/${currentSlot}`, { cache: "no-store" });
+    if (!res.ok) throw new Error("Bad server");
+
+    const data = await res.json();
+
+    if (data.status === "RESERVED") {
+      bookingInfo.textContent = `Reserved Slot: ${currentSlot}`;
+      releaseBtn.style.display = "block";
+
+      if (data.reservedUntil) {
+        startCountdown(data.reservedUntil);
+      }
+
+    } else {
+      // Slot expired on server
+      bookingInfo.textContent = "No active booking.";
+      countdownEl.textContent = "";
+      releaseBtn.style.display = "none";
+      localStorage.removeItem("reservedSlot");
+    }
+
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+/* Release Button */
+releaseBtn.onclick = async () => {
+  if (!currentSlot) return;
+
+  await fetch(`${API}/${currentSlot}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status: "EMPTY" })
+  });
+
+  localStorage.removeItem("reservedSlot");
+  currentSlot = null;
+  bookingInfo.textContent = "No active booking.";
+  countdownEl.textContent = "";
+  releaseBtn.style.display = "none";
+};
+
+/* Auto-update every 2 seconds */
+setInterval(loadBooking, 2000);
+loadBooking();
 </script>
-
-<!-- Make page active inside app.js -->
-<script>window.PAGE='BOOKING';</script>
-
-<!-- Main JS -->
-<script src="app.js"></script>
 
 </body>
 </html>
+
