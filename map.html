@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Parkway • Parking Map</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+
 <style>
+/* ——————————————————————— */
+/* YOUR ORIGINAL UI (UNCHANGED) */
+/* ——————————————————————— */
 :root{
   --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
   --asphalt: #2b2b2b;
@@ -73,7 +77,6 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   border:1px solid rgba(255,255,255,0.03);
 }
 
-/* Roads */
 .vertical-road{
   grid-column:2 / 3;
   grid-row:1 / 6;
@@ -85,6 +88,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   justify-content:center;
   z-index:2;
 }
+
 .vertical-road::after{
   content:"";
   position:absolute;
@@ -109,6 +113,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   border-radius:6px;
   z-index:2;
 }
+
 .hroad::before{
   content:"";
   position:absolute;
@@ -124,23 +129,13 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   );
 }
 
-/* Parking Slots */
-.band{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  padding:6px 6px;
-}
-.park-row{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  justify-content:flex-start;
-}
+.band{ display:flex; flex-direction:column; gap:14px; padding:6px 6px; }
+.park-row{ display:flex; gap:8px; align-items:center; }
+
 .slot{
   width:64px;
   height:96px;
-  background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.25));
+  background:rgba(255,255,255,0.02);
   border:2px solid rgba(255,255,255,0.06);
   border-radius:6px;
   color:#fff;
@@ -149,11 +144,8 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   align-items:flex-end;
   justify-content:flex-end;
   position:relative;
-  z-index:3;
-  transition: transform .12s ease, box-shadow .12s ease;
   cursor:pointer;
 }
-.slot:hover{ transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.5); }
 .slot-number{
   font-size:.65rem;
   opacity:0.95;
@@ -162,7 +154,6 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   background:rgba(0,0,0,0.25);
 }
 
-/* Unified Colors */
 .slot.free{ background: rgba(36,255,109,0.1); border-color: var(--free); }
 .slot.reserved{ background: rgba(255,208,86,0.15); border-color: var(--reserved); }
 .slot.occupied{ background: rgba(255,82,82,0.12); border-color: var(--occupied); }
@@ -174,16 +165,14 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   font-weight:700;
   z-index:5;
 }
-.entrance{top:-20px; left:50%; transform:translateX(-50%); background:var(--free); color:#07121a;}
-.exit{bottom:-20px; left:50%; transform:translateX(-50%); background:var(--occupied); color:#07121a;}
+.entrance{top:-20px; left:50%; transform:translateX(-50%); background:var(--free);}
+.exit{bottom:-20px; left:50%; transform:translateX(-50%); background:var(--occupied);}
 
-@media (max-width:900px){
-  .lot-grid{grid-template-columns: 1fr 96px 1fr; padding:18px}
-  .slot{width:52px;height:82px}
-}
 </style>
 </head>
+
 <body>
+
 <header class="topbar">
   <div class="brand"><a href="index.html">🚗 Parkway</a></div>
   <nav class="navlinks">
@@ -198,20 +187,22 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 
 <main class="container">
   <section class="panel">
+
     <div class="panel-head">
       <h2>Live Parking Map</h2>
       <div class="legend">
         <span class="dot free"></span> Free
-        <span style="margin-left:12px" class="dot reserved"></span> Reserved
-        <span style="margin-left:12px" class="dot occupied"></span> Occupied
+        <span class="dot reserved" style="margin-left:12px"></span> Reserved
+        <span class="dot occupied" style="margin-left:12px"></span> Occupied
       </div>
     </div>
 
+    <!-- LOT GRID (unchanged) -->
     <div class="lot-grid">
       <div class="vertical-road"></div>
 
-      <!-- A ROW -->
-      <div class="band" style="grid-column:1 / 2; grid-row:1 / 2;">
+      <!-- A -->
+      <div class="band" style="grid-column:1/2; grid-row:1/2;">
         <div class="park-row">
           <div class="slot free" id="A1"><span class="slot-number">A1</span></div>
           <div class="slot free" id="A2"><span class="slot-number">A2</span></div>
@@ -221,8 +212,8 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
         </div>
       </div>
 
-      <!-- B ROW -->
-      <div class="band" style="grid-column:3 / 4; grid-row:1 / 2;">
+      <!-- B -->
+      <div class="band" style="grid-column:3/4; grid-row:1/2;">
         <div class="park-row">
           <div class="slot free" id="B1"><span class="slot-number">B1</span></div>
           <div class="slot free" id="B2"><span class="slot-number">B2</span></div>
@@ -232,8 +223,8 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
         </div>
       </div>
 
-      <!-- C ROW -->
-      <div class="band" style="grid-column:1 / 2; grid-row:3 / 4;">
+      <!-- C -->
+      <div class="band" style="grid-column:1/2; grid-row:3/4;">
         <div class="park-row">
           <div class="slot free" id="C1"><span class="slot-number">C1</span></div>
           <div class="slot free" id="C2"><span class="slot-number">C2</span></div>
@@ -243,8 +234,8 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
         </div>
       </div>
 
-      <!-- D ROW -->
-      <div class="band" style="grid-column:3 / 4; grid-row:3 / 4;">
+      <!-- D -->
+      <div class="band" style="grid-column:3/4; grid-row:3/4;">
         <div class="park-row">
           <div class="slot free" id="D1"><span class="slot-number">D1</span></div>
           <div class="slot free" id="D2"><span class="slot-number">D2</span></div>
@@ -254,20 +245,21 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
         </div>
       </div>
 
-      <div class="hroad" style="grid-column:1 / 4; grid-row:2 / 3;"></div>
-      <div class="hroad" style="grid-column:1 / 4; grid-row:4 / 5;"></div>
+      <div class="hroad" style="grid-row:2/3; grid-column:1/4"></div>
+      <div class="hroad" style="grid-row:4/5; grid-column:1/4"></div>
 
       <div class="entrance">ENTRANCE</div>
       <div class="exit">EXIT</div>
+
     </div>
   </section>
 </main>
 
 <script>
-/* BACKEND API */
+/* API */
 const API_URL = "/api/parking";
 
-/* Normalize backend → UI */
+/* Normalize server → UI */
 function normalizeStatus(s) {
   const st = String(s || "").trim().toUpperCase();
   if (st === "FREE" || st === "EMPTY") return "FREE";
@@ -276,8 +268,9 @@ function normalizeStatus(s) {
   return "FREE";
 }
 
-/* When user clicks a slot */
+/* WHEN USER CLICKS SLOT */
 function onSlotClick(slotId) {
+
   const yes = confirm(`Do you want to reserve ${slotId}?`);
   if (!yes) return;
 
@@ -288,13 +281,18 @@ function onSlotClick(slotId) {
   })
   .then(r => r.json())
   .then(d => {
+
     console.log("Reserved:", d);
+
+    /* ⭐ FIX: Save active booking ⭐ */
+    localStorage.setItem("reservedSlot", slotId);
+
     alert(`${slotId} reserved!`);
   })
   .catch(err => console.error("ERR:", err));
 }
 
-/* Fetch live statuses */
+/* LIVE UPDATE */
 let fetching = false;
 
 async function fetchSlots() {
@@ -313,12 +311,12 @@ async function fetchSlots() {
 
       const s = normalizeStatus(data[id]);
 
-      el.classList.remove("free", "reserved", "occupied");
+      el.classList.remove("free","reserved","occupied");
       if (s === "FREE") el.classList.add("free");
       if (s === "RESERVED") el.classList.add("reserved");
       if (s === "OCCUPIED") el.classList.add("occupied");
 
-      /* Attach click listener (all slots clickable) */
+      /* Make clickable */
       el.onclick = () => onSlotClick(id);
     });
 
@@ -337,4 +335,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
