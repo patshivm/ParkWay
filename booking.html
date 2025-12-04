@@ -22,21 +22,17 @@ body {
 
 .btn { padding:12px 20px; border:none; border-radius:6px; cursor:pointer; font-size:1rem; }
 .btn.outline { background:none; border:2px solid #70afbb; color:#70afbb; }
-.btn.green { background:#24ff6d; color:#07121a; font-weight:600; }
 .mt { margin-top:18px; }
 .small { font-size:0.8rem; opacity:0.8; }
 
-/* ⭐ Flashing red text when < 60 sec ⭐ */
+/* Flash warning */
 .flash-red {
   color:#ff5252;
   animation: flash 1s infinite alternate;
 }
-@keyframes flash {
-  from { opacity:1; }
-  to { opacity:0.3; }
-}
+@keyframes flash { from{opacity:1;} to{opacity:0.3;} }
 
-/* Extend buttons container */
+/* Extend buttons */
 .extend-box { margin-top:20px; display:none; }
 .extend-btn {
   margin:5px;
@@ -48,9 +44,7 @@ body {
   cursor:pointer;
   font-weight:600;
 }
-.extend-btn:hover {
-  background:#ffcf3f;
-}
+.extend-btn:hover { background:#ffcf3f; }
 </style>
 </head>
 
@@ -71,13 +65,14 @@ body {
 <main class="container">
   <section class="panel">
     <h2>Your Booking</h2>
-    <div id="bookingInfo" class="booking-card">No active booking.</div>
+
+    <div id="bookingInfo">No active booking.</div>
 
     <button id="releaseBtn" class="btn outline mt" style="display:none;">
       Release My Slot
     </button>
 
-    <!-- ⭐ NEW: EXTEND RESERVATION -->
+    <!-- Extend time UI -->
     <div id="extendBox" class="extend-box">
       <p>Extend your reservation:</p>
       <button class="extend-btn" onclick="extendReservation(5)">+5 min</button>
@@ -91,11 +86,13 @@ body {
 
 <script>
 const API_URL = "/api/parking";
+
 const infoBox = document.getElementById("bookingInfo");
 const releaseBtn = document.getElementById("releaseBtn");
 const extendBox = document.getElementById("extendBox");
 
 let countdownTimer = null;
+const MAX_RESERVE_MINUTES = 60;  // ⭐ 1-hour full limit
 
 function stopCountdown() {
   if (countdownTimer) clearInterval(countdownTimer);
@@ -119,7 +116,7 @@ function showNoBooking() {
   localStorage.removeItem("reservedExpiry");
 }
 
-// FREE slot on server
+// Free slot on server
 async function freeSlot(slotId) {
   await fetch(`${API_URL}/${slotId}`, {
     method: "POST",
@@ -128,21 +125,17 @@ async function freeSlot(slotId) {
   });
 }
 
-// RELEASE BUTTON
+// Release button
 releaseBtn.onclick = async () => {
   const slot = localStorage.getItem("reservedSlot");
   if (!slot) return;
 
   await freeSlot(slot);
   showNoBooking();
-
-  // force refresh map
-  fetch(`/api/parking?ts=${Date.now()}`);
-
   alert("Your slot has been released!");
 };
 
-// COUNTDOWN + FLASH < 60 SEC
+// Countdown
 function startCountdown(endTime, slot) {
   stopCountdown();
 
@@ -157,25 +150,32 @@ function startCountdown(endTime, slot) {
 
     infoBox.textContent = `${slot} — Reserved • expires in ${formatTime(left)}`;
 
-    // ⭐ FLASH RED if less than 60 sec
     if (left < 60000) infoBox.classList.add("flash-red");
     else infoBox.classList.remove("flash-red");
-
   }, 1000);
 }
 
-// ⭐ EXTEND RESERVATION ⭐
+// ⭐ EXTEND RESERVATION WITH 60-MIN LIMIT ⭐
 function extendReservation(mins) {
-  let slot = localStorage.getItem("reservedSlot");
+  const slot = localStorage.getItem("reservedSlot");
   let expiry = Number(localStorage.getItem("reservedExpiry"));
-
   if (!slot) return;
 
-  // Add minutes
+  const now = Date.now();
+  const currentRemaining = Math.max(0, expiry - now);
+  const currentMinutes = currentRemaining / 60000;
+
+  const newTotal = currentMinutes + mins;
+
+  // ❌ BLOCK EXTENSION IF > 60 minutes
+  if (newTotal > MAX_RESERVE_MINUTES) {
+    alert(`❌ You cannot extend more than ${MAX_RESERVE_MINUTES} minutes total.`);
+    return;
+  }
+
   const newExpiry = expiry + mins * 60000;
   localStorage.setItem("reservedExpiry", newExpiry);
 
-  // Update server
   fetch(`${API_URL}/${slot}`, {
     method:"POST",
     headers:{"Content-Type":"application/json"},
@@ -186,7 +186,7 @@ function extendReservation(mins) {
   alert(`Reservation extended by ${mins} minutes.`);
 }
 
-// INITIAL LOAD
+// Initial load
 function updateUI() {
   const slot = localStorage.getItem("reservedSlot");
   let expiry = localStorage.getItem("reservedExpiry");
@@ -200,7 +200,6 @@ function updateUI() {
   extendBox.style.display = "block";
 
   if (!expiry) {
-    // first-time booking → set new expiry = 20 mins
     expiry = Date.now() + 20 * 60000;
     localStorage.setItem("reservedExpiry", expiry);
   }
@@ -213,6 +212,7 @@ updateUI();
 
 </body>
 </html>
+
 
 
 
