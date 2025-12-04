@@ -4,20 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Parkway • My Booking</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-
-<style>
-  #countdown {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-top: 10px;
-    color: #ffd056;
-  }
-</style>
 </head>
-
 <body>
 
 <header class="topbar">
@@ -37,9 +26,10 @@
     <h2>Your Booking</h2>
 
     <div id="bookingInfo" class="booking-card">No active booking.</div>
-    <div id="countdown"></div>
 
-    <button id="releaseBtn" class="btn outline mt" style="display:none;">Release My Slot</button>
+    <button id="releaseBtn" class="btn outline mt" style="display:none;">
+      Release My Slot
+    </button>
 
     <p class="muted small mt">
       Tip: Select a slot on the <a href="map.html">Parking Map</a> to reserve.
@@ -52,103 +42,94 @@
 </footer>
 
 <script>
-document.getElementById('year').textContent = new Date().getFullYear();
+document.getElementById("year").textContent = new Date().getFullYear();
 
-const API = "/api/parking";
-const bookingInfo = document.getElementById("bookingInfo");
+const API_URL = "/api/parking";
+const infoBox = document.getElementById("bookingInfo");
 const releaseBtn = document.getElementById("releaseBtn");
-const countdownEl = document.getElementById("countdown");
 
-let currentSlot = localStorage.getItem("reservedSlot") || null;
-let countdownTimer = null;
+let slot = localStorage.getItem("reservedSlot");
+let expiry = localStorage.getItem("reservedExpiry");
 
-/* Convert ms → MM:SS */
 function formatTime(ms) {
-  const totalSec = Math.floor(ms / 1000);
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  const total = Math.floor(ms / 1000);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${s.toString().padStart(2,'0')}`;
 }
 
-/* Start countdown timer */
-function startCountdown(expiry) {
-  clearInterval(countdownTimer);
+function showNoBooking() {
+  infoBox.textContent = "No active booking.";
+  releaseBtn.style.display = "none";
 
-  countdownTimer = setInterval(() => {
-    const now = Date.now();
-    const diff = expiry - now;
-
-    if (diff <= 0) {
-      countdownEl.textContent = "Expired";
-      bookingInfo.textContent = "No active booking.";
-      releaseBtn.style.display = "none";
-      localStorage.removeItem("reservedSlot");
-      clearInterval(countdownTimer);
-      return;
-    }
-
-    countdownEl.textContent = "Expires in: " + formatTime(diff);
-  }, 1000);
+  localStorage.removeItem("reservedSlot");
+  localStorage.removeItem("reservedExpiry");
 }
 
-/* Load status from server */
-async function loadBooking() {
-  if (!currentSlot) {
-    bookingInfo.textContent = "No active booking.";
-    countdownEl.textContent = "";
-    releaseBtn.style.display = "none";
+async function updateUI() {
+
+  slot = localStorage.getItem("reservedSlot");
+  expiry = localStorage.getItem("reservedExpiry");
+
+  if (!slot) {
+    showNoBooking();
     return;
   }
 
-  try {
-    const res = await fetch(`${API}/${currentSlot}`, { cache: "no-store" });
-    if (!res.ok) throw new Error("Bad server");
+  // Show button
+  releaseBtn.style.display = "inline-block";
 
-    const data = await res.json();
+  // Handle countdown
+  let target = expiry ? Number(expiry) : null;
 
-    if (data.status === "RESERVED") {
-      bookingInfo.textContent = `Reserved Slot: ${currentSlot}`;
-      releaseBtn.style.display = "block";
+  if (!target) {
+    target = Date.now() + 20 * 60 * 1000; // 20 minutes
+    localStorage.setItem("reservedExpiry", target);
+  }
 
-      if (data.reservedUntil) {
-        startCountdown(data.reservedUntil);
-      }
+  function tick() {
+    const left = target - Date.now();
 
-    } else {
-      // Slot expired on server
-      bookingInfo.textContent = "No active booking.";
-      countdownEl.textContent = "";
-      releaseBtn.style.display = "none";
-      localStorage.removeItem("reservedSlot");
+    if (left <= 0) {
+      // Auto-expire booking
+      freeSlot(slot);
+      showNoBooking();
+      return;
     }
 
-  } catch (err) {
-    console.error(err);
+    infoBox.textContent = `${slot} — Reserved • expires in ${formatTime(left)}`;
+  }
+
+  tick();
+  setInterval(tick, 1000);
+}
+
+async function freeSlot(slotId) {
+  try {
+    await fetch(`${API_URL}/${slotId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "FREE" })
+    });
+  } catch (e) {
+    console.error("Release failed", e);
   }
 }
 
-/* Release Button */
 releaseBtn.onclick = async () => {
-  if (!currentSlot) return;
+  if (!slot) return;
 
-  await fetch(`${API}/${currentSlot}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ status: "EMPTY" })
-  });
+  await freeSlot(slot);
 
-  localStorage.removeItem("reservedSlot");
-  currentSlot = null;
-  bookingInfo.textContent = "No active booking.";
-  countdownEl.textContent = "";
-  releaseBtn.style.display = "none";
+  showNoBooking();
+
+  alert("Your slot has been released!");
 };
 
-/* Auto-update every 2 seconds */
-setInterval(loadBooking, 2000);
-loadBooking();
+updateUI();
 </script>
 
 </body>
 </html>
+
 
