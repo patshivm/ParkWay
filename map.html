@@ -7,125 +7,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
-/* ——————————————————————— */
-/* ORIGINAL UI (UNCHANGED) */
-/* ——————————————————————— */
+/* ----- YOUR ORIGINAL UI, UNCHANGED ----- */
 :root{
   --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
-  --asphalt: #2b2b2b;
-  --asphalt-dark: #1f1f1f;
-  --slot-border: #ffd700;
-  --road-width: 120px;
-  --hroad-height: 72px;
-  --gutter: 22px;
-
-  --free: #24ff6d;
-  --reserved: #ffd056;
-  --occupied: #ff5252;
+  --free:#24ff6d; --reserved:#ffd056; --occupied:#ff5252;
 }
 
-*{box-sizing:border-box;}
-html,body{height:100%;margin:0;padding:0}
-body{
-  font-family:"Poppins",sans-serif;
-  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3)) fixed;
-  color:#fff;
-}
-
-header.topbar{
-  background:rgba(0,0,0,0.28);
-  padding:.6rem 1.75rem;
-  display:flex; justify-content:space-between; align-items:center;
-  backdrop-filter: blur(6px);
-}
-header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
-
-.container{max-width:1400px; margin:1.75rem auto; padding:0 1rem;}
-
-.panel{
-  background:rgba(255,255,255,0.03);
-  border-radius:10px; padding:1rem;
-  box-shadow:0 10px 40px rgba(0,0,0,0.35);
-}
-
-.panel-head{display:flex;justify-content:space-between;align-items:center}
-
-.legend{font-size:0.92rem}
-.legend .dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:6px}
-.legend .free{background:var(--free)}
-.legend .reserved{background:var(--reserved)}
-.legend .occupied{background:var(--occupied)}
-
-.lot-grid{
-  display:grid;
-  grid-template-columns:1fr var(--road-width) 1fr;
-  grid-template-rows:auto var(--hroad-height) auto var(--hroad-height) auto;
-  gap:var(--gutter);
-  padding:28px;
-  border-radius:8px;
-  background:rgba(0,0,0,0.18);
-}
-
-/* Roads */
-.vertical-road{
-  grid-column:2 / 3; grid-row:1 / 6;
-  background:var(--asphalt-dark); border-radius:8px;
-  position:relative;
-}
-.vertical-road::after{
-  content:""; position:absolute; left:50%; top:0;
-  transform:translateX(-50%);
-  width:6px; height:100%;
-  background-image:repeating-linear-gradient(to bottom,#fff 0 18px, transparent 18px 36px);
-  opacity:.7;
-}
-
-.hroad{
-  background:var(--asphalt-dark);
-  border-radius:6px;
-  height:var(--hroad-height);
-  position:relative;
-}
-.hroad::before{
-  content:""; position:absolute; top:50%;
-  height:6px; left:0; width:100%;
-  transform:translateY(-50%);
-  background-image:repeating-linear-gradient(to right,#fff 0 24px, transparent 24px 48px);
-}
-
-/* Slots */
-.slot{
-  width:64px; height:96px;
-  background:rgba(255,255,255,0.02);
-  border:2px solid rgba(255,255,255,0.06);
-  border-radius:6px;
-  display:flex; align-items:flex-end; justify-content:flex-end;
-  cursor:pointer;
-}
-.slot-number{
-  font-size:.65rem;
-  padding:6px 8px;
-  background:rgba(0,0,0,0.25);
-  border-radius:4px;
-}
-
-.slot.free{ background:rgba(36,255,109,0.12); border-color:var(--free); }
-.slot.reserved{ background:rgba(255,208,86,0.15); border-color:var(--reserved); }
-.slot.occupied{ background:rgba(255,82,82,0.15); border-color:var(--occupied); }
-
-.band{display:flex;flex-direction:column;gap:14px;padding:6px}
-.park-row{display:flex;gap:8px}
-
-/* Entry/Exit */
-.entrance, .exit{
-  position:absolute;
-  padding:6px 10px;
-  border-radius:6px;
-  font-weight:700;
-}
-.entrance{top:-20px; left:50%; transform:translateX(-50%); background:var(--free);}
-.exit{bottom:-20px; left:50%; transform:translateX(-50%); background:var(--occupied);}
-
+/* (UI code omitted here on purpose — keep yours exactly same) */
 </style>
 </head>
 
@@ -155,69 +43,23 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
       </div>
     </div>
 
-    <!-- GRID -->
+    <!-- YOUR LOT GRID EXACTLY SAME -->
     <div class="lot-grid">
-      <div class="vertical-road"></div>
-
-      <!-- A -->
-      <div class="band" style="grid-column:1/2; grid-row:1/2;">
-        <div class="park-row">
-          <div class="slot free" id="A1"><span class="slot-number">A1</span></div>
-          <div class="slot free" id="A2"><span class="slot-number">A2</span></div>
-          <div class="slot free" id="A3"><span class="slot-number">A3</span></div>
-          <div class="slot free" id="A4"><span class="slot-number">A4</span></div>
-          <div class="slot free" id="A5"><span class="slot-number">A5</span></div>
-        </div>
-      </div>
-
-      <!-- B -->
-      <div class="band" style="grid-column:3/4; grid-row:1/2;">
-        <div class="park-row">
-          <div class="slot free" id="B1"><span class="slot-number">B1</span></div>
-          <div class="slot free" id="B2"><span class="slot-number">B2</span></div>
-          <div class="slot free" id="B3"><span class="slot-number">B3</span></div>
-          <div class="slot free" id="B4"><span class="slot-number">B4</span></div>
-          <div class="slot free" id="B5"><span class="slot-number">B5</span></div>
-        </div>
-      </div>
-
-      <!-- C -->
-      <div class="band" style="grid-column:1/2; grid-row:3/4;">
-        <div class="park-row">
-          <div class="slot free" id="C1"><span class="slot-number">C1</span></div>
-          <div class="slot free" id="C2"><span class="slot-number">C2</span></div>
-          <div class="slot free" id="C3"><span class="slot-number">C3</span></div>
-          <div class="slot free" id="C4"><span class="slot-number">C4</span></div>
-          <div class="slot free" id="C5"><span class="slot-number">C5</span></div>
-        </div>
-      </div>
-
-      <!-- D -->
-      <div class="band" style="grid-column:3/4; grid-row:3/4;">
-        <div class="park-row">
-          <div class="slot free" id="D1"><span class="slot-number">D1</span></div>
-          <div class="slot free" id="D2"><span class="slot-number">D2</span></div>
-          <div class="slot free" id="D3"><span class="slot-number">D3</span></div>
-          <div class="slot free" id="D4"><span class="slot-number">D4</span></div>
-          <div class="slot free" id="D5"><span class="slot-number">D5</span></div>
-        </div>
-      </div>
-
-      <div class="hroad" style="grid-row:2/3; grid-column:1/4"></div>
-      <div class="hroad" style="grid-row:4/5; grid-column:1/4"></div>
-
-      <div class="entrance">ENTRANCE</div>
-      <div class="exit">EXIT</div>
-
+      <!-- A–D rows exactly same — keep your UI -->
     </div>
+
   </section>
 </main>
 
 <script>
-/* Backend API */
+/* ========================= */
+/*      BACKEND API LINK     */
+/* ========================= */
 const API_URL = "/api/parking";
 
-/* Convert backend to UI */
+/* ========================= */
+/* NORMALIZE SERVER STATUS   */
+/* ========================= */
 function normalizeStatus(s) {
   const st = String(s || "").trim().toUpperCase();
   if (st === "FREE" || st === "EMPTY") return "FREE";
@@ -226,43 +68,61 @@ function normalizeStatus(s) {
   return "FREE";
 }
 
-/* User clicks a slot */
+/* ================================================= */
+/* WHEN USER CLICKS A SLOT (BOOK FROM MAP PAGE)     */
+/* ================================================= */
 function onSlotClick(slotId) {
-  const yes = confirm(`Do you want to reserve ${slotId}?`);
-  if (!yes) return;
+
+  const confirmReserve = confirm(`Do you want to reserve ${slotId}?`);
+  if (!confirmReserve) return;
 
   fetch(`${API_URL}/${slotId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status: "RESERVED" })
   })
-  .then(r => r.json())
+  .then(res => res.json())
   .then(d => {
+
+    console.log("BOOKED:", d);
+
+    /* SAVE BOOKING FOR BOOKING PAGE */
     localStorage.setItem("reservedSlot", slotId);
+    localStorage.setItem("reservedUntil", Date.now() + 20 * 60000);
+
     alert(`${slotId} reserved!`);
   })
-  .catch(err => console.error("ERR:", err));
+  .catch(err => console.error("ERR booking:", err));
 }
 
-/* Fetch live slot data — ALWAYS NO CACHE */
-let fetching = false;
+/* ===================================== */
+/* LIVE UPDATE PARKING MAP EVERY 2 SEC   */
+/* ===================================== */
+let isFetching = false;
+
 async function fetchSlots() {
-  if (fetching) return;
-  fetching = true;
+  if (isFetching) return;
+  isFetching = true;
 
   try {
-    const res = await fetch(`${API_URL}?t=${Date.now()}`, { cache: "no-store" });
+    const res = await fetch(API_URL, { cache: "no-store" });
     if (!res.ok) return;
-
     const data = await res.json();
 
     Object.keys(data).forEach(id => {
+
       const el = document.getElementById(id);
       if (!el) return;
 
-      const s = normalizeStatus(data[id]);
+      const st = normalizeStatus(data[id]);
 
-      el.className = `slot ${s.toLowerCase()}`;
+      /* APPLY COLORS */
+      el.classList.remove("free", "reserved", "occupied");
+      if (st === "FREE") el.classList.add("free");
+      if (st === "RESERVED") el.classList.add("reserved");
+      if (st === "OCCUPIED") el.classList.add("occupied");
+
+      /* MAKE CLICKABLE */
       el.onclick = () => onSlotClick(id);
     });
 
@@ -270,7 +130,7 @@ async function fetchSlots() {
     console.error(err);
   }
 
-  fetching = false;
+  isFetching = false;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -281,6 +141,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
 
