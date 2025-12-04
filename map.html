@@ -8,7 +8,7 @@
 
 <style>
 /* ——————————————————————— */
-/* YOUR ORIGINAL UI (UNCHANGED) */
+/* ORIGINAL UI (UNCHANGED) */
 /* ——————————————————————— */
 :root{
   --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
@@ -31,8 +31,6 @@ body{
   font-family:"Poppins",sans-serif;
   color:#fff;
   background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3)) fixed;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
 }
 
 header.topbar{
@@ -41,7 +39,6 @@ header.topbar{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  backdrop-filter: blur(6px);
   border-bottom:1px solid rgba(255,255,255,0.06);
 }
 header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
@@ -61,109 +58,67 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 }
 
 .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-.legend{font-size:0.92rem}
-.legend .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
-.legend .free{background:var(--free)} .legend .reserved{background:var(--reserved)} .legend .occupied{background:var(--occupied)}
+.legend .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px}
+.legend .free{background:var(--free)}
+.legend .reserved{background:var(--reserved)}
+.legend .occupied{background:var(--occupied)}
 
 .lot-grid{
   display:grid;
   grid-template-columns: 1fr var(--road-width) 1fr;
   grid-template-rows: auto var(--hroad-height) auto var(--hroad-height) auto;
   gap: var(--gutter);
-  position:relative;
   padding:28px;
   border-radius:8px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.12));
-  border:1px solid rgba(255,255,255,0.03);
+  background: rgba(0,0,0,0.18);
 }
 
 .vertical-road{
   grid-column:2 / 3;
   grid-row:1 / 6;
-  background: linear-gradient(180deg, var(--asphalt-dark), rgba(0,0,0,0.6));
+  background: var(--asphalt-dark);
   border-radius:8px;
   position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:2;
 }
-
 .vertical-road::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  top:0;
-  transform:translateX(-50%);
-  width:6px;
-  height:100%;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.9) 0 18px,
-    transparent 18px 36px
-  );
-  opacity:0.7;
+  content:""; position:absolute; left:50%; top:0; transform:translateX(-50%);
+  width:6px; height:100%;
+  background-image: repeating-linear-gradient(to bottom, #fff 0 18px, transparent 18px 36px);
 }
 
 .hroad{
   grid-column:1 / 4;
   height:var(--hroad-height);
-  background: linear-gradient(90deg, var(--asphalt-dark), rgba(0,0,0,0.6));
-  position:relative;
+  background: var(--asphalt-dark);
   border-radius:6px;
-  z-index:2;
+  position:relative;
 }
-
 .hroad::before{
-  content:"";
-  position:absolute;
-  left:0;
-  top:50%;
-  transform:translateY(-50%);
-  height:6px;
-  width:100%;
-  background-image: repeating-linear-gradient(
-    to right,
-    rgba(255,255,255,0.9) 0 24px,
-    transparent 24px 48px
-  );
+  content:""; position:absolute; top:50%; transform:translateY(-50%);
+  width:100%; height:6px;
+  background-image: repeating-linear-gradient(to right, #fff 0 24px, transparent 24px 48px);
 }
 
-.band{ display:flex; flex-direction:column; gap:14px; padding:6px 6px; }
-.park-row{ display:flex; gap:8px; align-items:center; }
+.band{display:flex; flex-direction:column; gap:14px;}
+.park-row{display:flex; gap:8px;}
 
 .slot{
-  width:64px;
-  height:96px;
+  width:64px; height:96px;
   background:rgba(255,255,255,0.02);
   border:2px solid rgba(255,255,255,0.06);
   border-radius:6px;
-  color:#fff;
-  font-weight:700;
-  display:flex;
-  align-items:flex-end;
-  justify-content:flex-end;
-  position:relative;
+  color:#fff; font-weight:700;
+  display:flex; align-items:flex-end; justify-content:flex-end;
   cursor:pointer;
 }
-.slot-number{
-  font-size:.65rem;
-  opacity:0.95;
-  padding:6px 8px;
-  border-radius:4px;
-  background:rgba(0,0,0,0.25);
-}
+.slot-number{font-size:.65rem; opacity:.95; padding:6px 8px;}
 
 .slot.free{ background: rgba(36,255,109,0.1); border-color: var(--free); }
 .slot.reserved{ background: rgba(255,208,86,0.15); border-color: var(--reserved); }
 .slot.occupied{ background: rgba(255,82,82,0.12); border-color: var(--occupied); }
 
 .entrance, .exit{
-  position:absolute;
-  padding:6px 10px;
-  border-radius:6px;
-  font-weight:700;
-  z-index:5;
+  position:absolute; padding:6px 10px; border-radius:6px; font-weight:700;
 }
 .entrance{top:-20px; left:50%; transform:translateX(-50%); background:var(--free);}
 .exit{bottom:-20px; left:50%; transform:translateX(-50%); background:var(--occupied);}
@@ -192,8 +147,8 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
       <h2>Live Parking Map</h2>
       <div class="legend">
         <span class="dot free"></span> Free
-        <span class="dot reserved" style="margin-left:12px"></span> Reserved
-        <span class="dot occupied" style="margin-left:12px"></span> Occupied
+        <span class="dot reserved"></span> Reserved
+        <span class="dot occupied"></span> Occupied
       </div>
     </div>
 
@@ -268,8 +223,16 @@ function normalizeStatus(s) {
   return "FREE";
 }
 
-/* WHEN USER CLICKS SLOT */
-function onSlotClick(slotId) {
+/* When user clicks a slot */
+function onSlotClick(slotId, currentState) {
+
+  // ----------------------------------
+  // 🚫 BLOCK if already reserved/occupied
+  // ----------------------------------
+  if (currentState === "RESERVED" || currentState === "OCCUPIED") {
+    alert(`Spot ${slotId} is already ${currentState.toLowerCase()}!`);
+    return;
+  }
 
   const yes = confirm(`Do you want to reserve ${slotId}?`);
   if (!yes) return;
@@ -281,12 +244,8 @@ function onSlotClick(slotId) {
   })
   .then(r => r.json())
   .then(d => {
-
-    console.log("Reserved:", d);
-
-    /* ⭐ FIX: Save active booking ⭐ */
     localStorage.setItem("reservedSlot", slotId);
-
+    localStorage.setItem("reservedExpiry", Date.now() + 20 * 60000);
     alert(`${slotId} reserved!`);
   })
   .catch(err => console.error("ERR:", err));
@@ -316,8 +275,8 @@ async function fetchSlots() {
       if (s === "RESERVED") el.classList.add("reserved");
       if (s === "OCCUPIED") el.classList.add("occupied");
 
-      /* Make clickable */
-      el.onclick = () => onSlotClick(id);
+      // Updated click handler (with protection)
+      el.onclick = () => onSlotClick(id, s);
     });
 
   } catch (err) {
@@ -335,3 +294,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
