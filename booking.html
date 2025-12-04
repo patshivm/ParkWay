@@ -7,13 +7,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 <header class="topbar">
   <div class="brand"><a href="index.html">🚗 Parkway</a></div>
   <nav class="navlinks">
     <a href="index.html">Home</a>
     <a href="map.html">Parking Map</a>
-    <a href="booking.html">My Booking</a>
+    <a href="booking.html" class="active">My Booking</a>
     <a href="dashboard.html">Dashboard</a>
     <a href="about.html">How It Works</a>
     <a href="contact.html">Contact</a>
@@ -21,20 +22,40 @@
 </header>
 
 <main class="container narrow">
+
   <section class="panel glass center">
     <h2>Your Booking</h2>
-    <div id="bookingInfo" class="booking-card">No active booking.</div>
-    <button id="releaseBtn" class="btn outline mt">Release My Slot</button>
-    <p class="muted small mt">Tip: Select a slot on the <a href="map.html">Parking Map</a> to reserve.</p>
+
+    <!-- LIVE BOOKING STATUS -->
+    <div id="bookingInfo" class="booking-card">
+      Loading booking…
+    </div>
+
+    <!-- RELEASE BUTTON -->
+    <button id="releaseBtn" class="btn outline mt">
+      Release My Slot
+    </button>
+
+    <p class="muted small mt">
+      Tip: Select a slot from the <a href="map.html">Parking Map</a> to reserve.
+    </p>
   </section>
+
 </main>
 
 <footer class="site-footer">
   <small>©️ <span id="year"></span> Parkway • Smart Parking System</small>
 </footer>
 
-<script src="app.js"></script>
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+
+<!-- Make page active inside app.js -->
 <script>window.PAGE='BOOKING';</script>
-<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+
+<!-- Main JS -->
+<script src="app.js"></script>
+
 </body>
 </html>
