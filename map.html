@@ -8,7 +8,7 @@
 
 <style>
 /* ——————————————————————— */
-/* YOUR ORIGINAL UI (UNCHANGED) */
+/* ORIGINAL UI (UNCHANGED) */
 /* ——————————————————————— */
 :root{
   --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
@@ -27,143 +27,101 @@
 *{box-sizing:border-box;}
 html,body{height:100%;margin:0;padding:0}
 body{
-  margin:0;
   font-family:"Poppins",sans-serif;
-  color:#fff;
   background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3)) fixed;
-  -webkit-font-smoothing:antialiased;
-  -moz-osx-font-smoothing:grayscale;
+  color:#fff;
 }
 
 header.topbar{
   background:rgba(0,0,0,0.28);
   padding:.6rem 1.75rem;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+  display:flex; justify-content:space-between; align-items:center;
   backdrop-filter: blur(6px);
-  border-bottom:1px solid rgba(255,255,255,0.06);
 }
 header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 
-.container{
-  max-width:1400px;
-  margin:1.75rem auto;
-  padding:0 1rem;
-}
+.container{max-width:1400px; margin:1.75rem auto; padding:0 1rem;}
 
 .panel{
-  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
-  border-radius:10px;
-  padding:1rem;
+  background:rgba(255,255,255,0.03);
+  border-radius:10px; padding:1rem;
   box-shadow:0 10px 40px rgba(0,0,0,0.35);
-  border:1px solid rgba(255,255,255,0.04);
 }
 
-.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.panel-head{display:flex;justify-content:space-between;align-items:center}
+
 .legend{font-size:0.92rem}
-.legend .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
-.legend .free{background:var(--free)} .legend .reserved{background:var(--reserved)} .legend .occupied{background:var(--occupied)}
+.legend .dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:6px}
+.legend .free{background:var(--free)}
+.legend .reserved{background:var(--reserved)}
+.legend .occupied{background:var(--occupied)}
 
 .lot-grid{
   display:grid;
-  grid-template-columns: 1fr var(--road-width) 1fr;
-  grid-template-rows: auto var(--hroad-height) auto var(--hroad-height) auto;
-  gap: var(--gutter);
-  position:relative;
+  grid-template-columns:1fr var(--road-width) 1fr;
+  grid-template-rows:auto var(--hroad-height) auto var(--hroad-height) auto;
+  gap:var(--gutter);
   padding:28px;
   border-radius:8px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.18), rgba(0,0,0,0.12));
-  border:1px solid rgba(255,255,255,0.03);
+  background:rgba(0,0,0,0.18);
 }
 
+/* Roads */
 .vertical-road{
-  grid-column:2 / 3;
-  grid-row:1 / 6;
-  background: linear-gradient(180deg, var(--asphalt-dark), rgba(0,0,0,0.6));
-  border-radius:8px;
+  grid-column:2 / 3; grid-row:1 / 6;
+  background:var(--asphalt-dark); border-radius:8px;
   position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  z-index:2;
 }
-
 .vertical-road::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  top:0;
+  content:""; position:absolute; left:50%; top:0;
   transform:translateX(-50%);
-  width:6px;
-  height:100%;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    rgba(255,255,255,0.9) 0 18px,
-    transparent 18px 36px
-  );
-  opacity:0.7;
+  width:6px; height:100%;
+  background-image:repeating-linear-gradient(to bottom,#fff 0 18px, transparent 18px 36px);
+  opacity:.7;
 }
 
 .hroad{
-  grid-column:1 / 4;
-  height:var(--hroad-height);
-  background: linear-gradient(90deg, var(--asphalt-dark), rgba(0,0,0,0.6));
-  position:relative;
+  background:var(--asphalt-dark);
   border-radius:6px;
-  z-index:2;
+  height:var(--hroad-height);
+  position:relative;
 }
-
 .hroad::before{
-  content:"";
-  position:absolute;
-  left:0;
-  top:50%;
+  content:""; position:absolute; top:50%;
+  height:6px; left:0; width:100%;
   transform:translateY(-50%);
-  height:6px;
-  width:100%;
-  background-image: repeating-linear-gradient(
-    to right,
-    rgba(255,255,255,0.9) 0 24px,
-    transparent 24px 48px
-  );
+  background-image:repeating-linear-gradient(to right,#fff 0 24px, transparent 24px 48px);
 }
 
-.band{ display:flex; flex-direction:column; gap:14px; padding:6px 6px; }
-.park-row{ display:flex; gap:8px; align-items:center; }
-
+/* Slots */
 .slot{
-  width:64px;
-  height:96px;
+  width:64px; height:96px;
   background:rgba(255,255,255,0.02);
   border:2px solid rgba(255,255,255,0.06);
   border-radius:6px;
-  color:#fff;
-  font-weight:700;
-  display:flex;
-  align-items:flex-end;
-  justify-content:flex-end;
-  position:relative;
+  display:flex; align-items:flex-end; justify-content:flex-end;
   cursor:pointer;
 }
 .slot-number{
   font-size:.65rem;
-  opacity:0.95;
   padding:6px 8px;
-  border-radius:4px;
   background:rgba(0,0,0,0.25);
+  border-radius:4px;
 }
 
-.slot.free{ background: rgba(36,255,109,0.1); border-color: var(--free); }
-.slot.reserved{ background: rgba(255,208,86,0.15); border-color: var(--reserved); }
-.slot.occupied{ background: rgba(255,82,82,0.12); border-color: var(--occupied); }
+.slot.free{ background:rgba(36,255,109,0.12); border-color:var(--free); }
+.slot.reserved{ background:rgba(255,208,86,0.15); border-color:var(--reserved); }
+.slot.occupied{ background:rgba(255,82,82,0.15); border-color:var(--occupied); }
 
+.band{display:flex;flex-direction:column;gap:14px;padding:6px}
+.park-row{display:flex;gap:8px}
+
+/* Entry/Exit */
 .entrance, .exit{
   position:absolute;
   padding:6px 10px;
   border-radius:6px;
   font-weight:700;
-  z-index:5;
 }
 .entrance{top:-20px; left:50%; transform:translateX(-50%); background:var(--free);}
 .exit{bottom:-20px; left:50%; transform:translateX(-50%); background:var(--occupied);}
@@ -197,7 +155,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
       </div>
     </div>
 
-    <!-- LOT GRID (unchanged) -->
+    <!-- GRID -->
     <div class="lot-grid">
       <div class="vertical-road"></div>
 
@@ -256,10 +214,10 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 </main>
 
 <script>
-/* API */
+/* Backend API */
 const API_URL = "/api/parking";
 
-/* Normalize server → UI */
+/* Convert backend to UI */
 function normalizeStatus(s) {
   const st = String(s || "").trim().toUpperCase();
   if (st === "FREE" || st === "EMPTY") return "FREE";
@@ -268,9 +226,8 @@ function normalizeStatus(s) {
   return "FREE";
 }
 
-/* WHEN USER CLICKS SLOT */
+/* User clicks a slot */
 function onSlotClick(slotId) {
-
   const yes = confirm(`Do you want to reserve ${slotId}?`);
   if (!yes) return;
 
@@ -281,26 +238,20 @@ function onSlotClick(slotId) {
   })
   .then(r => r.json())
   .then(d => {
-
-    console.log("Reserved:", d);
-
-    /* ⭐ FIX: Save active booking ⭐ */
     localStorage.setItem("reservedSlot", slotId);
-
     alert(`${slotId} reserved!`);
   })
   .catch(err => console.error("ERR:", err));
 }
 
-/* LIVE UPDATE */
+/* Fetch live slot data — ALWAYS NO CACHE */
 let fetching = false;
-
 async function fetchSlots() {
   if (fetching) return;
   fetching = true;
 
   try {
-    const res = await fetch(API_URL, { cache: "no-store" });
+    const res = await fetch(`${API_URL}?t=${Date.now()}`, { cache: "no-store" });
     if (!res.ok) return;
 
     const data = await res.json();
@@ -311,12 +262,7 @@ async function fetchSlots() {
 
       const s = normalizeStatus(data[id]);
 
-      el.classList.remove("free","reserved","occupied");
-      if (s === "FREE") el.classList.add("free");
-      if (s === "RESERVED") el.classList.add("reserved");
-      if (s === "OCCUPIED") el.classList.add("occupied");
-
-      /* Make clickable */
+      el.className = `slot ${s.toLowerCase()}`;
       el.onclick = () => onSlotClick(id);
     });
 
@@ -335,5 +281,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
+
 
 
