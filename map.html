@@ -7,13 +7,145 @@
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
-/* ----- YOUR ORIGINAL UI, UNCHANGED ----- */
+/* ——————————————————————— */
+/* YOUR ORIGINAL UI (UNCHANGED) */
+/* ——————————————————————— */
 :root{
   --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
-  --free:#24ff6d; --reserved:#ffd056; --occupied:#ff5252;
+  --asphalt: #2b2b2b;
+  --asphalt-dark: #1f1f1f;
+  --slot-border: #ffd700;
+  --road-width: 120px;
+  --hroad-height: 72px;
+  --gutter: 22px;
+
+  --free: #24ff6d;
+  --reserved: #ffd056;
+  --occupied: #ff5252;
 }
 
-/* (UI code omitted here on purpose — keep yours exactly same) */
+*{box-sizing:border-box;}
+html,body{height:100%;margin:0;padding:0}
+body{
+  margin:0;
+  font-family:"Poppins",sans-serif;
+  color:#fff;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2), var(--bg3)) fixed;
+}
+
+header.topbar{
+  background:rgba(0,0,0,0.28);
+  padding:.6rem 1.75rem;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  backdrop-filter: blur(6px);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
+
+.container{
+  max-width:1400px;
+  margin:1.75rem auto;
+  padding:0 1rem;
+}
+
+.panel{
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+  border-radius:10px;
+  padding:1rem;
+  box-shadow:0 10px 40px rgba(0,0,0,0.35);
+  border:1px solid rgba(255,255,255,0.04);
+}
+
+.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.legend{font-size:0.92rem}
+.legend .dot{display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:6px;vertical-align:middle}
+.legend .free{background:var(--free)} .legend .reserved{background:var(--reserved)} .legend .occupied{background:var(--occupied)}
+
+.lot-grid{
+  display:grid;
+  grid-template-columns: 1fr var(--road-width) 1fr;
+  grid-template-rows: auto var(--hroad-height) auto var(--hroad-height) auto;
+  gap: var(--gutter);
+  position:relative;
+  padding:28px;
+  border-radius:8px;
+  background: rgba(0,0,0,0.18);
+}
+
+/* Roads & slots — unchanged */
+.vertical-road{
+  grid-column:2 / 3;
+  grid-row:1 / 6;
+  background: var(--asphalt-dark);
+  border-radius:8px;
+  position:relative;
+}
+.vertical-road::after{
+  content:"";
+  position:absolute;
+  left:50%; transform:translateX(-50%);
+  width:6px;height:100%;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.9) 0 18px,
+    transparent 18px 36px
+  );
+  opacity:0.7;
+}
+.hroad{
+  grid-column:1 / 4;
+  height:var(--hroad-height);
+  background: var(--asphalt-dark);
+  border-radius:6px;
+}
+.hroad::before{
+  content:"";
+  position:absolute;
+  left:0; top:50%;
+  transform:translateY(-50%);
+  height:6px;width:100%;
+  background-image: repeating-linear-gradient(
+    to right,
+    rgba(255,255,255,0.9) 0 24px,
+    transparent 24px 48px
+  );
+}
+
+.band{ display:flex; flex-direction:column; gap:14px; padding:6px 6px; }
+.park-row{ display:flex; gap:8px; align-items:center; }
+
+.slot{
+  width:64px;height:96px;
+  background:rgba(255,255,255,0.02);
+  border:2px solid rgba(255,255,255,0.06);
+  border-radius:6px;
+  cursor:pointer;
+  display:flex;
+  align-items:flex-end;
+  justify-content:flex-end;
+}
+.slot-number{
+  font-size:.65rem;
+  padding:6px 8px;
+  background:rgba(0,0,0,0.25);
+  border-radius:4px;
+}
+
+.slot.free{ background: rgba(36,255,109,0.1); border-color: var(--free); }
+.slot.reserved{ background: rgba(255,208,86,0.15); border-color: var(--reserved); }
+.slot.occupied{ background: rgba(255,82,82,0.12); border-color: var(--occupied); }
+
+.entrance, .exit{
+  position:absolute;
+  padding:6px 10px;
+  border-radius:6px;
+  font-weight:700;
+}
+.entrance{top:-20px; left:50%; transform:translateX(-50%); background:var(--free);}
+.exit{bottom:-20px; left:50%; transform:translateX(-50%); background:var(--occupied);}
+
 </style>
 </head>
 
@@ -43,23 +175,68 @@
       </div>
     </div>
 
-    <!-- YOUR LOT GRID EXACTLY SAME -->
     <div class="lot-grid">
-      <!-- A–D rows exactly same — keep your UI -->
-    </div>
+      <div class="vertical-road"></div>
 
+      <!-- A -->
+      <div class="band" style="grid-column:1/2; grid-row:1/2;">
+        <div class="park-row">
+          <div class="slot free" id="A1"><span class="slot-number">A1</span></div>
+          <div class="slot free" id="A2"><span class="slot-number">A2</span></div>
+          <div class="slot free" id="A3"><span class="slot-number">A3</span></div>
+          <div class="slot free" id="A4"><span class="slot-number">A4</span></div>
+          <div class="slot free" id="A5"><span class="slot-number">A5</span></div>
+        </div>
+      </div>
+
+      <!-- B -->
+      <div class="band" style="grid-column:3/4; grid-row:1/2;">
+        <div class="park-row">
+          <div class="slot free" id="B1"><span class="slot-number">B1</span></div>
+          <div class="slot free" id="B2"><span class="slot-number">B2</span></div>
+          <div class="slot free" id="B3"><span class="slot-number">B3</span></div>
+          <div class="slot free" id="B4"><span class="slot-number">B4</span></div>
+          <div class="slot free" id="B5"><span class="slot-number">B5</span></div>
+        </div>
+      </div>
+
+      <!-- C -->
+      <div class="band" style="grid-column:1/2; grid-row:3/4;">
+        <div class="park-row">
+          <div class="slot free" id="C1"><span class="slot-number">C1</span></div>
+          <div class="slot free" id="C2"><span class="slot-number">C2</span></div>
+          <div class="slot free" id="C3"><span class="slot-number">C3</span></div>
+          <div class="slot free" id="C4"><span class="slot-number">C4</span></div>
+          <div class="slot free" id="C5"><span class="slot-number">C5</span></div>
+        </div>
+      </div>
+
+      <!-- D -->
+      <div class="band" style="grid-column:3/4; grid-row:3/4;">
+        <div class="park-row">
+          <div class="slot free" id="D1"><span class="slot-number">D1</span></div>
+          <div class="slot free" id="D2"><span class="slot-number">D2</span></div>
+          <div class="slot free" id="D3"><span class="slot-number">D3</span></div>
+          <div class="slot free" id="D4"><span class="slot-number">D4</span></div>
+          <div class="slot free" id="D5"><span class="slot-number">D5</span></div>
+        </div>
+      </div>
+
+      <div class="hroad" style="grid-row:2/3; grid-column:1/4"></div>
+      <div class="hroad" style="grid-row:4/5; grid-column:1/4"></div>
+
+      <div class="entrance">ENTRANCE</div>
+      <div class="exit">EXIT</div>
+
+    </div>
   </section>
 </main>
 
 <script>
-/* ========================= */
-/*      BACKEND API LINK     */
-/* ========================= */
+/* API */
 const API_URL = "/api/parking";
 
-/* ========================= */
-/* NORMALIZE SERVER STATUS   */
-/* ========================= */
+/* Normalize server → UI */
 function normalizeStatus(s) {
   const st = String(s || "").trim().toUpperCase();
   if (st === "FREE" || st === "EMPTY") return "FREE";
@@ -68,61 +245,58 @@ function normalizeStatus(s) {
   return "FREE";
 }
 
-/* ================================================= */
-/* WHEN USER CLICKS A SLOT (BOOK FROM MAP PAGE)     */
-/* ================================================= */
+/* User click → reserve */
 function onSlotClick(slotId) {
-
-  const confirmReserve = confirm(`Do you want to reserve ${slotId}?`);
-  if (!confirmReserve) return;
+  const yes = confirm(`Do you want to reserve ${slotId}?`);
+  if (!yes) return;
 
   fetch(`${API_URL}/${slotId}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ status: "RESERVED" })
   })
-  .then(res => res.json())
+  .then(r => r.json())
   .then(d => {
-
-    console.log("BOOKED:", d);
-
-    /* SAVE BOOKING FOR BOOKING PAGE */
     localStorage.setItem("reservedSlot", slotId);
-    localStorage.setItem("reservedUntil", Date.now() + 20 * 60000);
-
     alert(`${slotId} reserved!`);
   })
-  .catch(err => console.error("ERR booking:", err));
+  .catch(err => console.error(err));
 }
 
-/* ===================================== */
-/* LIVE UPDATE PARKING MAP EVERY 2 SEC   */
-/* ===================================== */
-let isFetching = false;
+/* LIVE UPDATE */
+let fetching = false;
 
 async function fetchSlots() {
-  if (isFetching) return;
-  isFetching = true;
+  if (fetching) return;
+  fetching = true;
 
   try {
     const res = await fetch(API_URL, { cache: "no-store" });
     if (!res.ok) return;
+
     const data = await res.json();
+    const my = localStorage.getItem("reservedSlot");
 
     Object.keys(data).forEach(id => {
-
       const el = document.getElementById(id);
       if (!el) return;
 
-      const st = normalizeStatus(data[id]);
+      const s = normalizeStatus(data[id]);
 
-      /* APPLY COLORS */
-      el.classList.remove("free", "reserved", "occupied");
-      if (st === "FREE") el.classList.add("free");
-      if (st === "RESERVED") el.classList.add("reserved");
-      if (st === "OCCUPIED") el.classList.add("occupied");
+      el.classList.remove("free","reserved","occupied");
 
-      /* MAKE CLICKABLE */
+      if (s === "FREE") {
+        el.classList.add("free");
+
+        /* ⭐ FIX: if this was MY reserved slot → clear it */
+        if (my === id) {
+          localStorage.removeItem("reservedSlot");
+        }
+      }
+
+      if (s === "RESERVED") el.classList.add("reserved");
+      if (s === "OCCUPIED") el.classList.add("occupied");
+
       el.onclick = () => onSlotClick(id);
     });
 
@@ -130,7 +304,7 @@ async function fetchSlots() {
     console.error(err);
   }
 
-  isFetching = false;
+  fetching = false;
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -141,7 +315,3 @@ document.addEventListener("DOMContentLoaded", () => {
 
 </body>
 </html>
-
-
-
-
