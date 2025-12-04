@@ -8,7 +8,7 @@
 
 <style>
 /* ——————————————————————— */
-/* ORIGINAL UI (UNCHANGED) */
+/* ORIGINAL UI (UNCHANGED EXCEPT ENTRANCE/EXIT FIX) */
 /* ——————————————————————— */
 :root{
   --bg1:#0f2027; --bg2:#203a43; --bg3:#2c5364;
@@ -73,13 +73,15 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
   background: rgba(0,0,0,0.18);
 }
 
+/* ⭐ IMPORTANT FIX FOR ENTRANCE & EXIT ALIGNMENT */
 .vertical-road{
   grid-column:2 / 3;
   grid-row:1 / 6;
   background: var(--asphalt-dark);
   border-radius:8px;
-  position:relative;
+  position:relative;   /* <— THIS FIXES ALIGNMENT */
 }
+
 .vertical-road::after{
   content:""; position:absolute; left:50%; top:0; transform:translateX(-50%);
   width:6px; height:100%;
@@ -117,31 +119,31 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 .slot.reserved{ background: rgba(255,208,86,0.15); border-color: var(--reserved); }
 .slot.occupied{ background: rgba(255,82,82,0.12); border-color: var(--occupied); }
 
+/* ⭐ ENTRANCE + EXIT PERFECT ALIGNMENT */
 .entrance {
   position: absolute;
-  top: -14px;              /* perfectly aligned above the road */
+  top: -24px;     /* aligned right above vertical road */
   left: 50%;
   transform: translateX(-50%);
   background: var(--free);
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 6px;
   font-weight: 700;
-  font-size: 0.85rem;      /* same size as before */
-  z-index: 5;
+  font-size: 0.85rem;
+  z-index: 10;
 }
 
 .exit {
   position: absolute;
-  bottom: -14px;           /* perfectly aligned under the road */
+  bottom: -24px; /* aligned right under vertical road */
   left: 50%;
   transform: translateX(-50%);
   background: var(--occupied);
-  padding: 6px 10px;
+  padding: 6px 12px;
   border-radius: 6px;
   font-weight: 700;
-  font-size: 0.85rem;      /* same size as before */
-  z-index: 5;
-}
+  font-size: 0.85rem;
+  z-index: 10;
 }
 </style>
 </head>
@@ -173,7 +175,10 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
     </div>
 
     <div class="lot-grid">
-      <div class="vertical-road"></div>
+      <div class="vertical-road">
+        <div class="entrance">ENTRANCE</div>
+        <div class="exit">EXIT</div>
+      </div>
 
       <!-- A ROW -->
       <div class="band" style="grid-column:1/2; grid-row:1/2;">
@@ -182,7 +187,7 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
           <div class="slot free" id="A2"><span class="slot-number">A2</span></div>
           <div class="slot free" id="A3"><span class="slot-number">A3</span></div>
           <div class="slot free" id="A4"><span class="slot-number">A4</span></div>
-          <div class="slot free" id="A5"><span class="slot-number">A5</span></div>
+          <div "slot free" id="A5"><span class="slot-number">A5</span></div>
         </div>
       </div>
 
@@ -221,9 +226,6 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 
       <div class="hroad" style="grid-row:2/3; grid-column:1/4"></div>
       <div class="hroad" style="grid-row:4/5; grid-column:1/4"></div>
-
-      <div class="entrance">ENTRANCE</div>
-      <div class="exit">EXIT</div>
 
     </div>
   </section>
