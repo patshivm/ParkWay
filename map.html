@@ -120,9 +120,21 @@ header.topbar a{color:#70afbb;text-decoration:none;margin-left:.6rem}
 .entrance, .exit{
   position:absolute; padding:6px 10px; border-radius:6px; font-weight:700;
 }
-.entrance{top:-20px; left:50%; transform:translateX(-50%); background:var(--free);}
-.exit{bottom:-20px; left:50%; transform:translateX(-50%); background:var(--occupied);}
+.entrance {
+  top: -32px;              /* moved slightly upward */
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--free);
+  padding: 8px 14px;       /* optional: better size */
+}
 
+.exit {
+  bottom: -32px;           /* moved slightly downward */
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--occupied);
+  padding: 8px 14px;       /* optional */
+}
 </style>
 </head>
 
